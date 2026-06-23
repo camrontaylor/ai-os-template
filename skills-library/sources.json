@@ -1,0 +1,60 @@
+{
+  "_comment": "Provenance for skills-library/backlog. SHAs are the upstream commits the vendored copies were taken from. Every pack vendored here is MIT-licensed and publish-safe (see LICENSES.md). Candidates are public repos worth turning into a skill later.",
+  "sources": [
+    {
+      "repo": "briiirussell/cybersecurity-skills",
+      "url": "https://github.com/briiirussell/cybersecurity-skills",
+      "commit": "c9ade0349f8ecd5c9c68a82a05d2b6012c5fa1d7",
+      "license": "MIT",
+      "vendored_to": "backlog/cybersecurity-skills",
+      "skills": 29,
+      "notes": "Plugin format. Also installable directly as a Claude Code plugin if you later want auto-updates instead of this vendored copy."
+    },
+    {
+      "repo": "coreyhaines31/marketingskills",
+      "url": "https://github.com/coreyhaines31/marketingskills",
+      "commit": "3bea48edea99dc3ff4fdbdf0ad5768c8965f1401",
+      "license": "MIT",
+      "vendored_to": "backlog/marketing",
+      "skills": 44,
+      "notes": "Broad marketing pack. Several overlap with the live marketing skills; the net-new ones include marketing-plan, prospecting, public-relations, sms."
+    },
+    {
+      "repo": "mattnowdev/thinking-partner",
+      "url": "https://github.com/mattnowdev/thinking-partner",
+      "commit": "tarball-2026-06-22",
+      "license": "MIT",
+      "vendored_to": "backlog/thinking-partner",
+      "skills": 1,
+      "notes": "Standalone 150+ mental-models thinking partner. Bundled as ONE skill: router SKILL.md + references/model-catalog.md + thinking-diagnostics.md, loaded on demand. The model for bundled promotion - one entry, not 150."
+    }
+  ],
+  "candidates": [
+    {
+      "repo": "farzaa/clicky",
+      "url": "https://github.com/farzaa/clicky",
+      "default_branch": "main",
+      "head": "a80fa80721a8aebe51a170a7780705024ebc6e46",
+      "head_as_of": "2026-06-22",
+      "license": "MIT",
+      "type": "app (not a SKILL.md skill)",
+      "vendored": false,
+      "skills": 0,
+      "clone": "gh repo clone farzaa/clicky",
+      "notes": "macOS app: an on-screen AI teaching buddy that watches your screen, talks back, and points a cursor at UI elements. NOT a Claude Code skill - tracked here as a reference to mine for a future screen-aware teaching / guided-walkthrough skill."
+    },
+    {
+      "repo": "TheCraigHewitt/seomachine",
+      "url": "https://github.com/TheCraigHewitt/seomachine",
+      "default_branch": "main",
+      "head": "70231da177abe92ec26375c051561ff9acd8423a",
+      "head_as_of": "2026-06-22",
+      "license": "MIT",
+      "type": "Claude Code workspace (vendorable: 26 skills, 24 commands, 11 agents)",
+      "vendored": false,
+      "skills": 26,
+      "clone": "gh repo clone TheCraigHewitt/seomachine",
+      "notes": "Claude Code workspace for long-form SEO blog content end to end: research, write, optimize, publish. Net-new value is the SEO commands + agents + data tooling (GA4, Search Console, DataForSEO); the bundled skills largely duplicate the marketing pack."
+    }
+  ]
+}

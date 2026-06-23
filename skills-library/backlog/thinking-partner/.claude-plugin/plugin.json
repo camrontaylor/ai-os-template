@@ -1,0 +1,8 @@
+{
+  "name": "thinking-partner",
+  "description": "A deterministic thinking partner that challenges assumptions and applies 150+ mental models to sharpen decisions, solve problems, and think more clearly. Features orientation detection, cognitive operations framework, and structured diagnostic workflows.",
+  "version": "1.0.0",
+  "author": {
+    "name": "mattnowdev"
+  }
+}

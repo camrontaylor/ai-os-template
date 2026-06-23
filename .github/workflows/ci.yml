@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  detect-zones:
+    runs-on: ubuntu-latest
+    outputs:
+      code-changed: ${{ steps.filter.outputs.code }}
+      config-changed: ${{ steps.filter.outputs.config }}
+      content-only: ${{ steps.filter.outputs.content-only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: filter
+        name: Classify changed files into zones
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE=${{ github.event.pull_request.base.sha }}
+            HEAD=${{ github.event.pull_request.head.sha }}
+          else
+            BASE=${{ github.event.before }}
+            HEAD=${{ github.sha }}
+          fi
+
+          # Handle initial commits where BASE is all zeros
+          if [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            FILES=$(git diff-tree --no-commit-id --name-only -r "$HEAD")
+          else
+            FILES=$(git diff --name-only "$BASE" "$HEAD")
+          fi
+
+          CODE=false
+          CONFIG=false
+          CONTENT_ONLY=true
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            # Zone 3: Code
+            if echo "$file" | grep -qE '^command-centre/|^\.claude/hooks/.*\.(js|ts)$'; then
+              CODE=true
+              CONTENT_ONLY=false
+              continue
+            fi
+
+            # Zone 2: Config
+            if echo "$file" | grep -qE '^\.claude/skills/.*/SKILL\.md$|^AGENTS\.md$|^CLAUDE\.md$|^\.env\.example$|^scripts/.*\.sh$'; then
+              CONFIG=true
+              CONTENT_ONLY=false
+              continue
+            fi
+
+            # Zone 1: Content (projects/, brand_context/, context/, cron/jobs/, clients/)
+            if echo "$file" | grep -qE '^projects/|^brand_context/|^context/|^cron/jobs/|^clients/'; then
+              continue
+            fi
+
+            # Anything else is non-content
+            CONTENT_ONLY=false
+          done <<< "$FILES"
+
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "config=$CONFIG" >> "$GITHUB_OUTPUT"
+          echo "content-only=$CONTENT_ONLY" >> "$GITHUB_OUTPUT"
+
+  checks:
+    needs: detect-zones
+    if: needs.detect-zones.outputs.content-only != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: command-centre/package-lock.json
+
+      - name: Install dependencies
+        working-directory: command-centre
+        run: npm ci
+
+      - name: Build command centre
+        if: needs.detect-zones.outputs.code-changed == 'true'
+        working-directory: command-centre
+        run: npm run build
+
+      - name: Syntax check shell scripts
+        run: |
+          for f in scripts/*.sh; do
+            [ -f "$f" ] && bash -n "$f"
+          done
+
+      - name: Syntax check hook scripts
+        run: |
+          for f in .claude/hooks/*.js; do
+            [ -f "$f" ] && node --check "$f"
+          done
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          EXIT_CODE=0
+          for skill_dir in .claude/skills/*/; do
+            [ ! -d "$skill_dir" ] && continue
+            SKILL_FILE="$skill_dir/SKILL.md"
+            [ ! -f "$SKILL_FILE" ] && continue
+
+            FOLDER_NAME=$(basename "$skill_dir")
+
+            # Skip catalog
+            [ "$FOLDER_NAME" = "_catalog" ] && continue
+
+            # Extract name from YAML frontmatter
+            YAML_NAME=$(sed -n '/^---$/,/^---$/{ /^name:/s/^name: *//p }' "$SKILL_FILE")
+
+            if [ "$YAML_NAME" != "$FOLDER_NAME" ]; then
+              echo "ERROR: $SKILL_FILE - name '$YAML_NAME' does not match folder '$FOLDER_NAME'"
+              EXIT_CODE=1
+            fi
+
+            # Check frontmatter length (awk exits after the second ---, so markdown body dividers don't get counted)
+            FRONTMATTER=$(awk '/^---$/{c++; print; if(c==2) exit; next} c==1' "$SKILL_FILE")
+            FM_LENGTH=${#FRONTMATTER}
+            if [ "$FM_LENGTH" -gt 1024 ]; then
+              echo "ERROR: $SKILL_FILE - frontmatter is ${FM_LENGTH} chars (max 1024)"
+              EXIT_CODE=1
+            fi
+          done
+          exit $EXIT_CODE
+
+  # Always-passing job so branch protection can require "ci-result"
+  ci-result:
+    if: always()
+    needs: [detect-zones, checks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine result
+        run: |
+          if [ "${{ needs.detect-zones.outputs.content-only }}" = "true" ]; then
+            echo "Content-only change - all checks skipped (auto-pass)"
+            exit 0
+          fi
+          if [ "${{ needs.checks.result }}" = "success" ]; then
+            echo "All checks passed"
+            exit 0
+          fi
+          if [ "${{ needs.checks.result }}" = "skipped" ]; then
+            echo "Checks skipped (auto-pass)"
+            exit 0
+          fi
+          echo "Checks failed"
+          exit 1

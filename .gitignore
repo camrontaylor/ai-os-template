@@ -1,0 +1,110 @@
+# Secrets
+.env
+.mcp.json
+**/.env.local
+
+# Local settings (per-machine Claude permissions)
+.claude/settings.local.json
+.claude/hooks_info/ccnotify.db
+.claude/hooks_info/ccnotify.log*
+.claude/hooks_info/footer-misses.log
+
+# Installer state
+.claude/skills/_catalog/installed.json
+
+# Dev-only skills (not shipped to main)
+.claude/skills/ops-new-feature/
+.claude/skills/ops-release/
+
+# System
+.DS_Store
+.backup/
+.tmp/
+
+# Next.js / Node (inside project folders)
+**/node_modules/
+**/.next/
+**/next-env.d.ts
+**/tsconfig.tsbuildinfo
+
+# Command Centre data (inside project folders)
+**/.command-centre/
+
+# Agent worktrees (temporary, per-machine)
+.worktrees/
+.claude/worktrees/
+
+# Document version snapshots (ops-versioning) - per-machine local history layer.
+# The committed file itself is the durable record; these frozen copies stay local,
+# like .worktrees/ and .backup/. Keeps them out of git status, content commits, and
+# the coexistence stash/recover net.
+**/.versions/
+
+# SQLite databases (inside project folders)
+**/data.db
+
+# Live/deployed products keep their own git repos (e.g. your-company-website).
+# Ignore every nested product repo under any client so a bulk add cannot embed it.
+clients/**/site/
+
+# Cron runtime (logs and status are generated at runtime)
+cron/logs/
+cron/status/
+
+# Raw session transcripts (indexed by memsearch, not committed)
+context/transcripts/*.md
+
+# memsearch shadow index (rebuildable - do not commit)
+.memsearch/
+
+# Private personal context. Never committed, never public, never used as content.
+# Local layer of understanding only (informs writing/work; indexed by memsearch locally).
+context/_private/
+clients/*/_private/
+
+# Safety net: stop a careless bulk `git add` from committing private data or heavy
+# binaries. Skills, scripts, and text (*.md, config *.json, *.svg) stay trackable.
+clients/personal/brand_context/self-profile/
+clients/**/*.pdf
+clients/**/*.png
+clients/**/*.jpg
+clients/**/*.jpeg
+clients/**/*.gif
+clients/**/*.webp
+clients/**/*.mp4
+clients/**/*.mov
+clients/**/*.zip
+clients/**/*.gz
+clients/**/*.fig
+clients/**/*.psd
+clients/**/*.sketch
+clients/**/*.woff
+clients/**/*.woff2
+clients/**/*.ttf
+clients/**/*.otf
+
+# Notion knowledge sync. Rebuildable from Notion, may contain personal notes. Not committed.
+context/notion/
+
+# Notion sync incremental state (per-machine timestamps; safe to delete).
+scripts/notion-sync/.sync-state.json
+
+# Live operational memory - per-machine, must not fork across branches (AGENTS.md:342 states context/memory/ is gitignored)
+context/memory/*.md
+context/MEMORY.md
+context/learnings.md
+
+# Per-client live memory - same intent as root, for every clients/<x>/context
+clients/*/context/memory/*.md
+clients/*/context/MEMORY.md
+clients/*/context/learnings.md
+.codex/
+.agents/
+.cursor/
+
+# Runtime scheduler lock (per-machine)
+.claude/scheduled_tasks.lock
+
+# Python bytecode (build junk)
+__pycache__/
+*.pyc

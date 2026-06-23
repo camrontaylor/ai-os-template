@@ -1,0 +1,15 @@
+# CLAUDE.local.md (example)
+
+This is an optional file for your own local rules. It is yours. Template updates never
+touch it, so anything you put here is safe to keep across upgrades.
+
+It does nothing while it is named `CLAUDE.local.md.example`. To turn it on, copy it to
+`CLAUDE.local.md` in this same folder. Once that file exists, it is loaded at session
+start and its rules extend and override the base `CLAUDE.md` for the whole session.
+
+Use it for standing rules you want the agent to follow every time. Keep each rule short
+and dated so you can see when you added it and why.
+
+## Rules
+
+- 2026-01-01: always do X when Y
