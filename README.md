@@ -94,7 +94,6 @@ AI-OS is built on three layers:
 | `viz-excalidraw-diagram` | Architecture and workflow diagrams | -- |
 | `str-ai-seo` | Optimize content for AI search engines and LLM citations | -- |
 | `ops-cron` | Schedule recurring Claude Code tasks | -- |
-| `viz-nano-banana` | Generate infographics, sketchnotes, and illustrated diagrams | `GEMINI_API_KEY` |
 | `viz-ad-creative-codex` | Build launch-ready ad creative batches natively in Codex with image generation, onboarding, creative matrix, QA, and performance readouts | -- |
 | `viz-ad-creative-fal` | Build Claude-powered multi-model paid ad creative batches using fal.ai for photoreal, typography, and short-video concepts | `FAL_KEY` |
 | `viz-ad-creative-figma` | Build Claude-powered deterministic, pixel-exact ad templates and offer cards with Figma export, Figma template flows, or local HTML fallback | `FIGMA_TOKEN` optional |

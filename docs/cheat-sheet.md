@@ -87,7 +87,7 @@ Add/remove/edit skills from the **root**. They sync to clients automatically on 
 |---------|-----|
 | Command Centre shows a `NODE_MODULE_VERSION` or `better-sqlite3` error | Your Node version changed since install. Run `npm rebuild better-sqlite3` inside `command-centre/`, then restart the Command Centre. |
 | Every scheduled job fails with HTTP 401 | The cron daemon has no Claude token. Run `claude setup-token`, then `bash scripts/enable-cron.sh <token>`. See `docs/memory-and-cron.md`. |
-| `viz-nano-banana` or `tool-youtube` errors on a Python version | They need Python 3.10 or newer. Easiest is `uv` (see `docs/connectors.md`). |
+| `tool-youtube` errors on a Python version | It needs Python 3.10 or newer. Easiest is `uv` (see `docs/connectors.md`). |
 
 ## Rules of Thumb
 

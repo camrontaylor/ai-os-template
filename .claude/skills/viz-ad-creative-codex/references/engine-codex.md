@@ -4,7 +4,7 @@ This is the engine reference for `viz-ad-creative-codex`. It assumes the operato
 
 ## Runtime Contract
 
-- Do not ask for `GEMINI_API_KEY`, `FAL_KEY`, `OPENAI_API_KEY`, or another generation key in this variant.
+- Do not ask for a generation API key in this variant. It runs from the native Codex image generation capability.
 - Use the native Codex image generation capability through the available `imagegen` skill/tool.
 - Save every prompt and every output to the campaign folder. Chat history is not the asset ledger.
 - If native image generation is unavailable, stop before image generation and deliver the prompt pack plus a recommended manual/subscription path.

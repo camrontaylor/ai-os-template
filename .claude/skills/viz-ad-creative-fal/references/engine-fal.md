@@ -96,8 +96,8 @@ Route by the job, not by habit. Exact fal model IDs below.
 | Vector, logo, long text, brand style | `fal-ai/recraft/v3/text-to-image` | $0.04/image ($0.08 vector) | Recraft V3. Img2img: `fal-ai/recraft/v3/image-to-image` |
 | Train a reusable brand style | `fal-ai/recraft/v3/create-style` | (see pricing page) | Train a `style_id` from up to 5 brand images |
 | Typographic posters, headlines in image | `fal-ai/ideogram/v3` | per-image price UNCONFIRMED | Ideogram V3, ~90-95% text accuracy. Also `/edit`, `/replace-background`, `/layerize-text` |
-| Reference compositing | `fal-ai/nano-banana/edit` | $0.0398/MP (per pricing page); per-image for `/edit` UNCONFIRMED | Gemini 2.5 Flash Image edit, natural-language edits from refs |
-| nano-banana Pro, strong character lock | `fal-ai/nano-banana-pro/edit` | UNCONFIRMED | Gemini 3 Pro Image. Up to 14 refs, 4 variations at once |
+| Reference compositing | `fal-ai/nano-banana/edit` | $0.0398/MP (per pricing page); per-image for `/edit` UNCONFIRMED | fal-hosted natural-language edits from reference images |
+| Reference compositing, strong character lock | `fal-ai/nano-banana-pro/edit` | UNCONFIRMED | fal-hosted multi-reference edit model. Up to 14 refs, 4 variations at once |
 | Short video, budget | `fal-ai/kling-video/...` (Kling 2.5 Turbo Pro / 3.0) | ~$0.07/s (Kling 2.5 Turbo Pro); Kling 3.0 ~$0.029/s UNCONFIRMED | Cheapest solid image-to-video / text-to-video for ad clips |
 | Short video, premium | Veo 3 / 3.1 (Google) on fal | $0.40/s (Veo 3); Veo 3.1 Lite ~$0.05/s UNCONFIRMED | Highest fidelity, highest cost |
 | Short video, reference/multi-shot | `bytedance/seedance-2.0/reference-to-video` (also `/text-to-video`, `/image-to-video`) | Seedance 2.0 ~$0.30/s UNCONFIRMED | Up to 15s, multi-shot, up to 9 images / 3 videos / 3 audio, native audio |
