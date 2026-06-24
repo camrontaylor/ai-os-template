@@ -5,6 +5,7 @@
 
 # Local settings (per-machine Claude permissions)
 .claude/settings.local.json
+.claude/launch.json
 .claude/hooks_info/ccnotify.db
 .claude/hooks_info/ccnotify.log*
 .claude/hooks_info/footer-misses.log
