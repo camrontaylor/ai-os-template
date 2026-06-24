@@ -5,23 +5,25 @@ days: sun
 active: 'true'
 model: haiku
 notify: on_failure
-description: 'Weekly reindex of the semi-static memory sources (operator, notion, brand_context, private)'
-timeout: 30m
+description: 'Weekly full force-rebuild of the canonical memsearch index (all sources)'
+timeout: 2h
 retry: '0'
+runner: shell
+command: bash scripts/memsearch-reindex.sh --force
 ---
 You are running as a scheduled job for AI-OS.
 
-Task: Re-index the semi-static memory sources that the nightly job does not cover, so changes to the operator profile, Notion sync, brand context, and private layer are picked up weekly. The transcripts folder is static (ingested once) and is intentionally NOT re-embedded here, to keep this job bounded and fast.
+Task: Once a week, force a full re-embed of EVERY memory source into the canonical collection, to clear any drift the nightly incremental index might miss. This runs the same shared script as the nightly job, with `--force`, so both list the identical complete source set and can never erase each other's work.
 
 Steps:
 
 1. Verify memsearch is installed (`memsearch --version`); if it fails, output "memsearch not installed - rebuild skipped." and stop.
 
-2. Re-index the semi-static sources, quieting the harmless gRPC keepalive noise:
-   - Run `GLOG_minloglevel=3 GRPC_VERBOSITY=NONE memsearch index context/operator/ context/_private/ context/notion/ brand_context/ .memsearch/memory/`
-
-3. Confirm: `GLOG_minloglevel=3 memsearch stats` and output `Rebuild complete: {chunk_count} chunks indexed.`
+2. Run the full force-rebuild (trims empty plugin stubs first, then re-embeds every source into the canonical collection):
+   - Run `bash scripts/memsearch-reindex.sh --force`
+   - Output the final `Result:` line it prints (the chunk count).
 
 Notes:
-- Runs Sunday night (23:33) inside the nightly wake batch. The daemon runs one job at a time, so this never overlaps the nightly index (23:30) even though both touch the single-process Milvus Lite store.
-- Transcripts (context/transcripts/) are indexed once at ingest and are static, so they are not re-embedded here. If the whole index is ever reset, run a one-time `GLOG_minloglevel=3 memsearch index context/transcripts/` to re-add them.
+- Same script and same complete source set as the nightly job (`scripts/memsearch-reindex.sh`); the only difference is `--force` (re-embed everything vs skip-unchanged). Listing the full set in one run is what prevents the destructive-sync clobber that the split nightly/weekly design used to cause.
+- The source set includes `context/transcripts/` and `.memsearch/memory/`; the script only indexes paths that exist.
+- Runs Sunday night (23:33) inside the nightly wake batch. The daemon runs one job at a time, so this never overlaps the nightly index (23:30) on the single-process Milvus Lite store. With --force this can take a while, hence the 2h timeout.

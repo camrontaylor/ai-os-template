@@ -51,6 +51,14 @@ else
 fi
 cd "$REPO_ROOT"
 
+# ---------- Team upstream (optional) ----------
+# A team checkout ships .aios-team.json; this shim exports the team's
+# AGENTIC_OS_UPSTREAM_SLUG/BRANCH from it so updates follow the team repo.
+# No-op on a solo install (the file is absent). See scripts/lib/team-config.sh.
+if [[ -f "$(dirname "${BASH_SOURCE[0]}")/team-config.sh" ]]; then
+    source "$(dirname "${BASH_SOURCE[0]}")/team-config.sh"
+fi
+
 # ---------- Upstream branch ----------
 UPSTREAM_BRANCH="${AGENTIC_OS_UPSTREAM_BRANCH:-main}"
 
@@ -245,5 +253,4 @@ PROTECTED_PATHS=(
     "brand_context/"
     "projects/"
     ".claude/skills/_catalog/installed.json"
-    ".claude/skills/viz-ugc-heygen/references/avatar-config.md"
 )

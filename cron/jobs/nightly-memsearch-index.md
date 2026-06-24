@@ -5,13 +5,15 @@ days: daily
 active: 'true'
 model: haiku
 notify: on_failure
-description: 'Re-indexes the small daily-changing AI-OS memory sources'
-timeout: 20m
-retry: '1'
+description: 'Re-indexes ALL AI-OS memory sources into the canonical collection'
+timeout: 2h
+retry: '0'
+runner: shell
+command: bash scripts/memsearch-reindex.sh
 ---
 You are running as a scheduled job for AI-OS.
 
-Task: Keep semantic recall (Tier 1) current by re-indexing only the small, daily-changing memory sources. memsearch re-embeds whatever paths it is given (it is not file-incremental), and ONNX embedding is slow on CPU, so a full reindex of every source would take over an hour and time out. The large static sources (transcripts, operator, brand_context) are handled by the weekly full rebuild, so this nightly job stays fast.
+Task: Keep semantic recall (Tier 1) current by re-indexing the COMPLETE memory source set into the AI-OS canonical collection. This MUST list every source in one run, because `memsearch index` is a destructive sync: it deletes any source not in the paths it was given. The old design split sources across this job and the weekly job, so they erased each other every night. The shared script `scripts/memsearch-reindex.sh` lists every source in one pass; it stays fast because memsearch skips unchanged files (transcripts, notion, etc.) when not forced.
 
 Steps:
 
@@ -19,16 +21,14 @@ Steps:
    - Run `memsearch --version`
    - If it fails, output "memsearch not installed - index skipped." and stop.
 
-2. Re-index the daily-volatile sources only, quieting the harmless gRPC keepalive log noise:
-   - Run `GLOG_minloglevel=3 GRPC_VERBOSITY=NONE memsearch index context/memory/ context/notion/ context/learnings.md`
-   - This is the single NIGHTLY owner of the index. The weekly rebuild owns the full set and runs at a different time, so there is never a concurrent write to the single-process Milvus Lite store.
-
-3. Check the result:
-   - Run `GLOG_minloglevel=3 memsearch stats`
-   - Output: `Index complete: {chunk_count} chunks indexed.`
+2. Run the single complete reindex (it trims empty plugin stubs first, then indexes every source into the canonical collection):
+   - Run `bash scripts/memsearch-reindex.sh`
+   - Output the final `Result:` line it prints (the chunk count).
 
 Notes:
+- This is the single complete nightly indexer. The weekly job runs the same script with `--force` for a full re-embed; both list the identical source set, so they never erase each other.
+- The canonical collection (from `scripts/lib/memsearch-collection.sh`, suffixed `_aios`) is deliberately separate from the memsearch plugin's own collection, so the plugin's per-session shadow indexing can never clobber this index.
+- `scripts/memsearch-reindex.sh` first runs `scripts/trim-memsearch-stubs.sh` to strip empty `## Session HH:MM` plugin stubs (no hard delete; backed up to Trash) before indexing.
 - Runs 30 minutes after daily-memory-distill (23:00) so newly distilled content is picked up.
-- The full rebuild (all sources incl. transcripts) is the weekly-memsearch-rebuild job.
-- The `too_many_pings` gRPC warnings from Milvus Lite are non-fatal; the GLOG env var above suppresses them.
-- On failure, retries once (retry: 1).
+- The `too_many_pings` gRPC warnings from Milvus Lite are non-fatal and are suppressed inside the script.
+- Immediate retry is disabled (`retry: 0`) because an instant retry can collide with an in-flight Milvus Lite index lock; the next scheduled run handles it.

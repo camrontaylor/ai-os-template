@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+
+# AI-OS Project Instructions
+
+The canonical instructions for this repository live in `AGENTS.md` at the
+repository root. Read and follow that file before making changes here.
+
+If this Cursor adapter and `AGENTS.md` ever conflict, `AGENTS.md` is the source
+of truth.
+
+@../../AGENTS.md

@@ -31,7 +31,7 @@ Each worktree gets its own folder and branch (isolation), but its brain is
 isolated for code, and unified for memory. One brain, many hands.
 
 ```
-~/Desktop/AI/AI-OS                 <- PRIMARY. Stays on clean main. Holds the one real brain.
+<your-ai-os-folder>                 <- PRIMARY. Stays on clean main. Holds the one real brain.
 ~/Desktop/Worktrees/AI-OS/<name>   <- a session worktree on branch work/<name>
    context/memory/2026-06-23.md    --> symlink --> primary's context/memory/2026-06-23.md
    context/MEMORY.md               --> symlink --> primary's context/MEMORY.md
@@ -70,7 +70,7 @@ start, so newly added memory files get picked up too.
 
 ## Rules that keep it working
 
-- **The primary checkout (`~/Desktop/AI/AI-OS`) stays on `main` and stays clean.**
+- **The primary checkout stays on `main` and stays clean.**
   It is home base and the single source of the brain. Do real branch work in a
   worktree, not in the primary. A clean primary is what makes "start a new session
   any time" never hit the stash box.

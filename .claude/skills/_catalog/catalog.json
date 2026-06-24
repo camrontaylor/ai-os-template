@@ -8,20 +8,23 @@
     }
   ],
   "core_skills": [
-    "meta-skill-creator",
-    "meta-wrap-up",
+    "meta-find-skills",
     "meta-memory-write",
+    "meta-skill-creator",
     "meta-synthesize-locals",
+    "meta-systems-check",
+    "meta-worktree",
+    "meta-wrap-up",
     "mkt-brand-voice",
-    "mkt-positioning",
     "mkt-icp",
+    "mkt-positioning",
     "ops-versioning"
   ],
   "skills": {
-    "tool-humanizer": {
-      "category": "utility",
+    "mkt-content-repurposing": {
+      "category": "execution",
       "version": "1.0.0",
-      "description": "De-AI text, match brand voice patterns",
+      "description": "Repurpose content across 8 platforms",
       "story": {
         "text": "",
         "video": ""
@@ -36,10 +39,46 @@
       "dependencies": [],
       "mcp_servers": []
     },
-    "tool-firecrawl-scraper": {
-      "category": "utility",
+    "mkt-copywriting": {
+      "category": "execution",
       "version": "1.0.0",
-      "description": "Web scraping with JS rendering and anti-bot bypass",
+      "description": "Direct response copywriting with scoring",
+      "story": {
+        "text": "",
+        "video": ""
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "summary": "Initial release"
+        }
+      ],
+      "requires_services": [],
+      "dependencies": [],
+      "mcp_servers": []
+    },
+    "mkt-ugc-scripts": {
+      "category": "execution",
+      "version": "1.0.0",
+      "description": "Short-form UGC video scripts for talking-head delivery",
+      "story": {
+        "text": "",
+        "video": ""
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "summary": "Initial release"
+        }
+      ],
+      "requires_services": [],
+      "dependencies": [],
+      "mcp_servers": []
+    },
+    "ops-agent-email": {
+      "category": "operations",
+      "version": "1.0.0",
+      "description": "The agent's own email inbox via AgentMail, to read its own magic links and one-time codes for headless tool logins",
       "story": {
         "text": "",
         "video": ""
@@ -51,15 +90,15 @@
         }
       ],
       "requires_services": [
-        "FIRECRAWL_API_KEY"
+        "AGENTMAIL_API_KEY"
       ],
       "dependencies": [],
       "mcp_servers": []
     },
-    "tool-youtube": {
-      "category": "utility",
+    "ops-cron": {
+      "category": "operations",
       "version": "1.0.0",
-      "description": "YouTube channel listing and transcript extraction",
+      "description": "Schedule recurring Claude Code tasks with the managed cron runtime",
       "story": {
         "text": "",
         "video": ""
@@ -70,9 +109,25 @@
           "summary": "Initial release"
         }
       ],
-      "requires_services": [
-        "YOUTUBE_API_KEY"
+      "requires_services": [],
+      "dependencies": [],
+      "mcp_servers": []
+    },
+    "str-ai-seo": {
+      "category": "strategy",
+      "version": "1.0.0",
+      "description": "Optimize content for AI search engines and LLM citations",
+      "story": {
+        "text": "",
+        "video": ""
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "summary": "Initial release"
+        }
       ],
+      "requires_services": [],
       "dependencies": [],
       "mcp_servers": []
     },
@@ -97,10 +152,10 @@
       "dependencies": [],
       "mcp_servers": []
     },
-    "mkt-copywriting": {
-      "category": "execution",
+    "tool-humanizer": {
+      "category": "utility",
       "version": "1.0.0",
-      "description": "Direct response copywriting with scoring",
+      "description": "Remove AI-generated writing patterns and restore natural human voice",
       "story": {
         "text": "",
         "video": ""
@@ -112,15 +167,13 @@
         }
       ],
       "requires_services": [],
-      "dependencies": [
-        "tool-humanizer"
-      ],
+      "dependencies": [],
       "mcp_servers": []
     },
-    "mkt-content-repurposing": {
-      "category": "execution",
+    "tool-youtube": {
+      "category": "utility",
       "version": "1.0.0",
-      "description": "Repurpose content across 8 platforms",
+      "description": "YouTube channel listing and transcript extraction",
       "story": {
         "text": "",
         "video": ""
@@ -131,16 +184,14 @@
           "summary": "Initial release"
         }
       ],
-      "requires_services": [],
-      "dependencies": [
-        "tool-humanizer"
+      "requires_services": [
+        "YOUTUBE_API_KEY"
       ],
+      "dependencies": [],
       "mcp_servers": []
     },
-    "mkt-ugc-scripts": {
-      "category": "execution",
+    "viz-ad-creative-codex": {
       "version": "1.0.0",
-      "description": "Short-form UGC video scripts for talking-head delivery",
       "story": {
         "text": "",
         "video": ""
@@ -151,11 +202,58 @@
           "summary": "Initial release"
         }
       ],
-      "requires_services": [],
       "dependencies": [
         "tool-humanizer"
       ],
-      "mcp_servers": []
+      "mcp_servers": [],
+      "category": "visual",
+      "description": "Codex-native no-key paid ad creative batches with onboarding, matrix, prompt packs, QA, and performance iteration",
+      "requires_services": []
+    },
+    "viz-ad-creative-fal": {
+      "version": "1.0.0",
+      "story": {
+        "text": "",
+        "video": ""
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "summary": "Initial release"
+        }
+      ],
+      "dependencies": [
+        "tool-humanizer"
+      ],
+      "mcp_servers": [],
+      "category": "visual",
+      "description": "Claude plus fal.ai paid ad creative batches for photoreal, typography, mixed-model, and short-video concepts",
+      "requires_services": [
+        "FAL_KEY"
+      ]
+    },
+    "viz-ad-creative-figma": {
+      "version": "1.0.0",
+      "story": {
+        "text": "",
+        "video": ""
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "summary": "Initial release"
+        }
+      ],
+      "dependencies": [
+        "tool-humanizer"
+      ],
+      "mcp_servers": [],
+      "category": "visual",
+      "description": "Claude plus deterministic Figma or HTML template ad creative batches for pixel-exact, brand-locked output",
+      "requires_services": [
+        "FIGMA_TOKEN",
+        "FIGMA_FILE_KEY"
+      ]
     },
     "viz-excalidraw-diagram": {
       "category": "visual",
@@ -193,166 +291,6 @@
         "GEMINI_API_KEY"
       ],
       "dependencies": [],
-      "mcp_servers": []
-    },
-    "viz-ugc-heygen": {
-      "category": "visual",
-      "version": "1.0.0",
-      "description": "AI avatar videos via HeyGen API",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [
-        "HEYGEN_API_KEY"
-      ],
-      "dependencies": [],
-      "mcp_servers": [
-        "heygen"
-      ]
-    },
-    "str-ai-seo": {
-      "category": "strategy",
-      "version": "1.0.0",
-      "description": "Optimize content for AI search engines and LLM citations",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [],
-      "dependencies": [],
-      "mcp_servers": []
-    },
-    "viz-interface-design": {
-      "category": "visual",
-      "version": "1.0.0",
-      "description": "Design dashboards, admin panels, and SaaS UIs",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [],
-      "dependencies": [],
-      "mcp_servers": []
-    },
-    "tool-stitch": {
-      "category": "utility",
-      "version": "1.0.0",
-      "description": "Fetch UI designs from Google Stitch projects",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [],
-      "dependencies": [],
-      "mcp_servers": [
-        "stitch"
-      ]
-    },
-    "viz-stitch-design": {
-      "category": "visual",
-      "version": "1.0.0",
-      "description": "Design and iterate on UI screens with Google Stitch",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [],
-      "dependencies": [
-        "tool-stitch"
-      ],
-      "mcp_servers": [
-        "stitch"
-      ]
-    },
-    "ops-cron": {
-      "category": "operations",
-      "version": "1.0.0",
-      "description": "Schedule recurring Claude Code tasks with the managed cron runtime",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [],
-      "dependencies": [],
-      "mcp_servers": []
-    },
-    "ops-agent-email": {
-      "category": "operations",
-      "version": "1.0.0",
-      "description": "The agent's own email inbox via AgentMail, to read its own magic links and one-time codes for headless tool logins",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [
-        "AGENTMAIL_API_KEY"
-      ],
-      "dependencies": [],
-      "mcp_servers": []
-    },
-    "ops-client-dashboard": {
-      "category": "operations",
-      "version": "1.0.0",
-      "description": "Read a client task board (kanban) headless using the agent's own login",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [
-        "AGENTMAIL_API_KEY"
-      ],
-      "dependencies": [
-        "ops-agent-email"
-      ],
       "mcp_servers": []
     }
   }

@@ -32,7 +32,7 @@ If instead it says something about needing a subscription and you are sure you h
 In the Terminal, go to the AI-OS folder and run the helper with your token pasted in:
 
 ```
-cd ~/Desktop/AI/AI-OS
+cd <your-ai-os-folder>
 bash scripts/enable-cron.sh PASTE_YOUR_TOKEN_HERE
 ```
 

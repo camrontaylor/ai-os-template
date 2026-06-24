@@ -4,7 +4,7 @@
 
 ---
 
-## 1. AI Cliches & Openers (18 patterns) - Severity: HIGH
+## 1. AI Cliches & Openers (18 patterns) — Severity: HIGH
 
 These are near-certain AI tells. Humans almost never write these unprompted.
 
@@ -29,22 +29,22 @@ These are near-certain AI tells. Humans almost never write these unprompted.
 | Bustling | "The bustling streets/city/marketplace" |
 | Resonate/reverberate | "This resonates deeply..." / "reverberates through" |
 
-## 2. Hedging Language (8 patterns) - Severity: MEDIUM
+## 2. Hedging Language (8 patterns) — Severity: MEDIUM
 
 AI hedges constantly to avoid commitment. Humans hedge too, but AI does it systematically.
 
 | Pattern | Detection rule |
 |---------|---------------|
 | "It's important to note" | Almost always removable without losing meaning |
-| "It's worth mentioning" | Same - throat-clearing before the actual point |
+| "It's worth mentioning" | Same — throat-clearing before the actual point |
 | "One might argue" | Passive attribution to nobody |
 | Vague quantifiers | "various", "numerous", "myriad", "plethora", "a myriad of" |
 | "Arguably" overuse | More than once per 500 words |
-| "Potentially" padding | "This could potentially..." - double hedge |
+| "Potentially" padding | "This could potentially..." — double hedge |
 | "It should be noted" | Passive filler |
 | "Interestingly" / "Notably" | AI uses these as emphasis markers humans rarely do |
 
-## 3. Corporate Buzzwords (12 patterns) - Severity: MEDIUM-HIGH
+## 3. Corporate Buzzwords (12 patterns) — Severity: MEDIUM-HIGH
 
 | AI word | Human replacement |
 |---------|------------------|
@@ -61,13 +61,13 @@ AI hedges constantly to avoid commitment. Humans hedge too, but AI does it syste
 | "bandwidth" (for capacity) | "time" / "capacity" |
 | "low-hanging fruit" | "easy wins" / "quick fixes" |
 
-## 4. Robotic Structure (9 patterns) - Severity: HIGH
+## 4. Robotic Structure (9 patterns) — Severity: HIGH
 
 | Pattern | What to look for |
 |---------|-----------------|
 | Rhetorical Q+A | Question immediately followed by its answer in the next sentence |
 | Obsessive parallelism | 3+ consecutive sentences starting the same way |
-| Always-three lists | Every list has exactly 3 items - humans vary |
+| Always-three lists | Every list has exactly 3 items — humans vary |
 | "Here are the top X" | List prefacing announcement |
 | Announcement of emphasis | "Importantly," "Crucially," "Significantly," at sentence start |
 | Section summary + preview | "Now that we've covered X, let's look at Y" |
@@ -75,7 +75,7 @@ AI hedges constantly to avoid commitment. Humans hedge too, but AI does it syste
 | Mirror structure | Every paragraph follows identical structure (claim, evidence, conclusion) |
 | Numbered everything | Numbering items that don't need ordering |
 
-## 5. Overused Transitions (14 patterns) - Severity: MEDIUM
+## 5. Overused Transitions (14 patterns) — Severity: MEDIUM
 
 Flag when density exceeds 3 per 500 words:
 
@@ -94,7 +94,7 @@ Flag when density exceeds 3 per 500 words:
 - "It is worth noting that"
 - Excessive "However" (more than 2 per 500 words)
 
-## 6. Promotional Inflation (8 patterns) - Severity: HIGH
+## 6. Promotional Inflation (8 patterns) — Severity: HIGH
 
 | Pattern | Why it's AI |
 |---------|------------|
@@ -104,29 +104,29 @@ Flag when density exceeds 3 per 500 words:
 | "Cutting-edge" | Meaningless superlative |
 | "State-of-the-art" | Same |
 | "Groundbreaking" | Rarely accurate |
-| "Comprehensive" (as praise) | "A comprehensive guide/solution/approach" - AI loves this |
-| "Robust" (for anything non-technical) | "A robust strategy" - AI favourite |
+| "Comprehensive" (as praise) | "A comprehensive guide/solution/approach" — AI loves this |
+| "Robust" (for anything non-technical) | "A robust strategy" — AI favourite |
 
-## 7. Wikipedia/Academic AI Tells (from Wikipedia "Signs of AI writing") - Severity: MEDIUM-HIGH
+## 7. Wikipedia/Academic AI Tells (from Wikipedia "Signs of AI writing") — Severity: MEDIUM-HIGH
 
 | Pattern | Description |
 |---------|------------|
-| Inflated symbolism | Treating ordinary subjects with grandiose language - "the enduring legacy of [mundane thing]" |
+| Inflated symbolism | Treating ordinary subjects with grandiose language — "the enduring legacy of [mundane thing]" |
 | Em dash overuse | More than 2 em dashes per 500 words in non-literary text |
-| Rule of three | Everything comes in threes - "X, Y, and Z" pattern repeated through the piece |
+| Rule of three | Everything comes in threes — "X, Y, and Z" pattern repeated through the piece |
 | Vague attributions | "Many experts believe..." / "Studies have shown..." / "Scholars argue..." with no citation |
-| Negative parallelisms | "Not just X, but Y" / "Not merely X, but also Y" - AI uses this constantly |
-| Superficial -ing analyses | "[Topic], reflecting [vague observation]" - surface-level analysis disguised as insight |
+| Negative parallelisms | "Not just X, but Y" / "Not merely X, but also Y" — AI uses this constantly |
+| Superficial -ing analyses | "[Topic], reflecting [vague observation]" — surface-level analysis disguised as insight |
 | Excessive conjunctive phrases | "On the other hand," "In addition to this," "As a result of this," stacking |
-| Delve | "Let's delve into..." / "delving deeper" - one of the highest-confidence AI vocabulary tells |
+| Delve | "Let's delve into..." / "delving deeper" — one of the highest-confidence AI vocabulary tells |
 | Multifaceted | "A multifaceted approach/issue/challenge" |
-| Nuanced | "A nuanced understanding/perspective" - AI uses this 50x more than humans |
+| Nuanced | "A nuanced understanding/perspective" — AI uses this 50x more than humans |
 | Foster | "Foster innovation/growth/collaboration" |
 | Underscore | "This underscores the importance of..." |
 | Pivotal | "A pivotal moment/role/development" |
 | Spearheaded | "She spearheaded the initiative" |
 
-## 8. AI Vocabulary Tells - Severity: HIGH
+## 8. AI Vocabulary Tells — Severity: HIGH
 
 Words that appear 10-50x more frequently in AI text than human text:
 
@@ -144,11 +144,11 @@ robust (non-technical), comprehensive (as praise), streamline, enhance, empower,
 ## Detection Priority
 
 When scanning, check in this order (highest-impact first):
-1. AI vocabulary tells (Section 8) - fastest signal
-2. AI cliches & openers (Section 1) - most obvious
-3. Robotic structure (Section 4) - hardest for humans to miss
-4. Corporate buzzwords (Section 3) - easy replacements
-5. Promotional inflation (Section 6) - easy replacements
-6. Wikipedia tells (Section 7) - subtler patterns
-7. Hedging language (Section 2) - context-dependent
-8. Overused transitions (Section 5) - density-dependent
+1. AI vocabulary tells (Section 8) — fastest signal
+2. AI cliches & openers (Section 1) — most obvious
+3. Robotic structure (Section 4) — hardest for humans to miss
+4. Corporate buzzwords (Section 3) — easy replacements
+5. Promotional inflation (Section 6) — easy replacements
+6. Wikipedia tells (Section 7) — subtler patterns
+7. Hedging language (Section 2) — context-dependent
+8. Overused transitions (Section 5) — density-dependent

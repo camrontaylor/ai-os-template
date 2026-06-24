@@ -161,8 +161,8 @@ Ask:
 **Handling each path:**
 - **Pasted examples** → capture verbatim; these feed `samples.md` directly with
   source noted as "user-provided during playbook interview".
-- **Links** → use WebFetch first, fall back to `tool-firecrawl-scraper` if the
-  site blocks. Extract representative sentences the same way Extract mode does.
+- **Links** → use WebFetch first. If the site blocks and `FIRECRAWL_API_KEY`
+  is configured, use Firecrawl directly; otherwise ask for pasted samples. Extract representative sentences the same way Extract mode does.
 - **Skip** → note in synthesis that samples are derived from answers only, and
   flag `samples.md` as "light - enrich later" in the output summary.
 

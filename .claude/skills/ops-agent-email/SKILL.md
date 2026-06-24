@@ -31,7 +31,7 @@ The engine is `scripts/agentmail.py` (Python stdlib only, no SDK). On invoke, al
 1. On the target tool, request a magic link / code to `your-agent@agentmail.to`.
 2. `python3 scripts/agentmail.py wait-for --from <tool>` returns the `link` (or `code`).
 3. Follow the link headless (agent-browser) or enter the code. Logged in, nothing expired.
-This is exactly how `ops-client-dashboard` reads its dashboard invite/access links.
+Use this pattern for any tool that sends a magic link, invite, or access code to the agent inbox.
 
 ## Rules
 - Read-only of the AGENT's own inbox. This is NOT the user's Gmail; never use it to read personal mail.

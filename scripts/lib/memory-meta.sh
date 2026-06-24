@@ -47,7 +47,8 @@ echo "=== Session Logs (context/memory/) ==="
 if [ ${#SESSION_DATES[@]} -eq 0 ]; then
   echo "No session logs found."
 else
-  echo "Range: ${SESSION_DATES[0]} → ${SESSION_DATES[-1]}"
+  LAST_SESSION_INDEX=$(( ${#SESSION_DATES[@]} - 1 ))
+  echo "Range: ${SESSION_DATES[0]} → ${SESSION_DATES[$LAST_SESSION_INDEX]}"
   echo "Count: ${#SESSION_DATES[@]} day(s)"
 
   # Detect gaps > 2 days
@@ -86,7 +87,8 @@ echo "=== Auto-Captures (.memsearch/memory/) ==="
 if [ ${#AUTO_DATES[@]} -eq 0 ]; then
   echo "No auto-captured logs found."
 else
-  echo "Range: ${AUTO_DATES[0]} → ${AUTO_DATES[-1]}"
+  LAST_AUTO_INDEX=$(( ${#AUTO_DATES[@]} - 1 ))
+  echo "Range: ${AUTO_DATES[0]} → ${AUTO_DATES[$LAST_AUTO_INDEX]}"
   echo "Count: ${#AUTO_DATES[@]} day(s)"
 fi
 

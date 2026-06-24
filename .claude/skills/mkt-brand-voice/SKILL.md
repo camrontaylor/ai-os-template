@@ -111,7 +111,7 @@ Best for: starting fresh, or existing content is too generic to reliably extract
 - **Quick** → use `references/build-questions.md`. Ask a maximum of 8 questions, prioritised by what context is already loaded. If `positioning.md` is loaded, skip questions it already answers. After building, ask for 2-3 sample sentences for `samples.md`.
 - **Playbook** → use `references/playbook-questions.md`. Walk through Step 1 (Personality, 5 questions), Step 2 (Strategic Framework, 4 questions - skip Q1/Q2 if `icp.md`/`positioning.md` exist), and Step 3 (Example Collection). Samples collected during the interview feed directly into `samples.md`. Follow the Playbook's Synthesis Instructions - derive every characteristic from the user's actual answers, never template from the example brief.
 
-If the user has already indicated a preference (e.g. the `/start-here` flow passed through a "deep flow" flag, or the user said "run the brand voice playbook"), skip the fork and route directly to the matching variant.
+If the user has already indicated a preference (e.g. the `/onboarding` flow passed through a "deep flow" flag, or the user said "run the brand voice playbook"), skip the fork and route directly to the matching variant.
 
 If the user already produced a strong sample corpus through Import / Extract / Auto-Scrape in this session, do **not** offer Playbook - they already have the raw material; keep Build as Quick.
 
@@ -126,7 +126,7 @@ Best for: user provides a URL and wants research done for them.
 Try sources in this order, using the cheapest tool that works:
 
 1. **WebFetch first** (free) - try homepage, About page, 2-3 blog posts, LinkedIn
-2. **If WebFetch fails** (JS-heavy site, bot protection, empty content) → fall back to `tool-firecrawl-scraper` skill
+2. **If WebFetch fails** (JS-heavy site, bot protection, empty content) → use Firecrawl directly if configured
    - Check `.env` for `FIRECRAWL_API_KEY` first
    - If missing → trigger the **Fallback** flow below (offer API key or build assets now). Do NOT stop here.
    - If present, use Firecrawl scrape endpoint with `formats=["markdown"]`

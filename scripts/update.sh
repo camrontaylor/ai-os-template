@@ -18,6 +18,11 @@ if [[ -z "${__AGENTIC_OS_UPDATE_BOOTSTRAPPED:-}" ]]; then
     case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) BOOTSTRAP_REPO_ROOT="$(cygpath -m "$BOOTSTRAP_REPO_ROOT")" ;; esac
     cd "$BOOTSTRAP_REPO_ROOT"
 
+    # Team checkout: follow the team repo for updates (no-op on a solo install).
+    if [[ -f "$BOOTSTRAP_REPO_ROOT/scripts/lib/team-config.sh" ]]; then
+        source "$BOOTSTRAP_REPO_ROOT/scripts/lib/team-config.sh"
+    fi
+
     BOOTSTRAP_UPSTREAM_BRANCH="${AGENTIC_OS_UPSTREAM_BRANCH:-main}"
     BOOTSTRAP_UPSTREAM_SLUG="${AGENTIC_OS_UPSTREAM_SLUG:-camrontaylor/ai-os-template}"
 

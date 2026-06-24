@@ -44,7 +44,7 @@ Choose from context or ask: *"Quick pass, full cleanup, or voice-matched?"*
 |------|-------------|----------|
 | `quick` | Remove obvious AI cliches + buzzwords. Single pass, no scoring. | Fast social edits, internal docs |
 | `standard` | Full pattern scan (50+ detections) + human-ness score + change log | Any content going public |
-| `deep` | Full scan + replace with voice-profile patterns. Loads `brand_context/voice-profile.md` | Blog posts, landing pages, emails - anything that must sound like the brand |
+| `deep` | Full scan + replace with voice-profile patterns. Loads `brand_context/voice-profile.md` | Blog posts, landing pages, emails — anything that must sound like the brand |
 
 **Default: `standard`.** When called by another skill as a post-processing step, use `deep` if voice-profile exists, `standard` if not.
 
@@ -64,10 +64,10 @@ Rate the input text 0-10 on the human-ness scale:
 
 | Score | Meaning |
 |-------|---------|
-| 0-3 | Obviously AI - multiple cliches, robotic structure, hedging everywhere |
-| 4-5 | AI-heavy - some human touches but needs major work |
-| 6-7 | Mixed - could go either way, lacks distinctive voice |
-| 8-9 | Human-like - natural voice, minimal AI patterns |
+| 0-3 | Obviously AI — multiple cliches, robotic structure, hedging everywhere |
+| 4-5 | AI-heavy — some human touches but needs major work |
+| 6-7 | Mixed — could go either way, lacks distinctive voice |
+| 8-9 | Human-like — natural voice, minimal AI patterns |
 | 10 | Indistinguishable from a skilled human writer |
 
 Scoring factors:
@@ -80,14 +80,14 @@ Scoring factors:
 
 Read `references/pattern-library.md` for the full detection list. Categories:
 
-1. **AI cliches & openers** - "In today's fast-paced world", "Let's dive in", "It's no secret"
-2. **Hedging language** - "It's important to note", "arguably", "one might argue"
-3. **Corporate buzzwords** - "leverage", "utilize", "facilitate", "optimize"
-4. **Robotic structure** - rhetorical Q+A, obsessive parallelism, always-three lists, "Here are the top X"
-5. **Overused transitions** - "Moreover", "Furthermore", "Additionally", "Nevertheless"
-6. **Promotional inflation** - "transformative", "game-changer", "unprecedented"
-7. **Wikipedia AI tells** - inflated symbolism, em dash overuse, rule of three, vague attributions, negative parallelisms, superficial -ing analyses, excessive conjunctive phrases
-8. **Vocabulary tells** - "delve", "tapestry", "multifaceted", "landscape", "nuanced", "foster", "realm"
+1. **AI cliches & openers** — "In today's fast-paced world", "Let's dive in", "It's no secret"
+2. **Hedging language** — "It's important to note", "arguably", "one might argue"
+3. **Corporate buzzwords** — "leverage", "utilize", "facilitate", "optimize"
+4. **Robotic structure** — rhetorical Q+A, obsessive parallelism, always-three lists, "Here are the top X"
+5. **Overused transitions** — "Moreover", "Furthermore", "Additionally", "Nevertheless"
+6. **Promotional inflation** — "transformative", "game-changer", "unprecedented"
+7. **Wikipedia AI tells** — inflated symbolism, em dash overuse, rule of three, vague attributions, negative parallelisms, superficial -ing analyses, excessive conjunctive phrases
+8. **Vocabulary tells** — "delve", "tapestry", "multifaceted", "landscape", "nuanced", "foster", "realm"
 
 Read `references/replacement-guide.md` for what to replace with.
 
@@ -95,11 +95,11 @@ Read `references/replacement-guide.md` for what to replace with.
 
 After removing AI patterns, add natural voice signals:
 
-- **Varied sentence rhythm** - break up same-length sentences
-- **Contractions** - "it's" not "it is" (unless formal context)
-- **Active voice** - flip passive constructions
-- **Confident assertions** - remove hedging unless genuinely uncertain
-- **Specific examples** - flag vague references for the user to make specific
+- **Varied sentence rhythm** — break up same-length sentences
+- **Contractions** — "it's" not "it is" (unless formal context)
+- **Active voice** — flip passive constructions
+- **Confident assertions** — remove hedging unless genuinely uncertain
+- **Specific examples** — flag vague references for the user to make specific
 
 In `deep` mode, apply voice-profile patterns:
 - Insert brand-preferred connectors and transitions
@@ -122,7 +122,7 @@ Changes:
   [N] voice markers added
 
 Flags for review:
-  [paragraph/line] - [what needs manual attention]
+  [paragraph/line] — [what needs manual attention]
 ```
 
 If called standalone, present the cleaned text directly.
@@ -154,7 +154,7 @@ The calling skill is responsible for saving the final output.
 
 ## Self-Update
 
-If the user flags an issue - too aggressive, missed a pattern, false positive - update the `## Rules` section immediately with the correction and today's date. Also log to `context/learnings.md` under `## tool-humanizer`.
+If the user flags an issue — too aggressive, missed a pattern, false positive — update the `## Rules` section immediately with the correction and today's date. Also log to `context/learnings.md` under `## tool-humanizer`.
 
 ## Scoring Thresholds
 
