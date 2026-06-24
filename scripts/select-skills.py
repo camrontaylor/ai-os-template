@@ -8,8 +8,8 @@ Skill selector with two modes:
    → Checkbox UI: arrow keys to navigate, Space to toggle, Enter to confirm
 
 2. CLI mode (for Claude Code or scripts - non-interactive):
-   python3 scripts/select-skills.py --remove "viz-nano-banana,viz-ugc-heygen,ops-cron"   # macOS/Linux
-   py -3 scripts/select-skills.py --remove "viz-nano-banana,viz-ugc-heygen,ops-cron"     # Windows
+   python3 scripts/select-skills.py --remove "viz-nano-banana,ops-cron"   # macOS/Linux
+   py -3 scripts/select-skills.py --remove "viz-nano-banana,ops-cron"     # Windows
    python3 scripts/select-skills.py --keep "mkt-copywriting,tool-humanizer,str-trending-research"
    py -3 scripts/select-skills.py --keep "mkt-copywriting,tool-humanizer,str-trending-research"
    python3 scripts/select-skills.py --keep all
@@ -134,7 +134,7 @@ def finalize(optional, selected, core_skills, skills_dir, installed_json, catalo
 
     # Write result JSON for Claude to read. Do this BEFORE printing the
     # summary so a downstream print failure can't prevent the consumer
-    # (start-here command) from seeing the selection result.
+    # (onboarding command) from seeing the selection result.
     result = {
         "selected": sorted(selected_names),
         "removed": sorted(removed_names),

@@ -23,7 +23,7 @@ Three things drove this update:
 - **Command Centre** - a full task board UI with Kanban view, project dashboards, cron scheduling, and client management. It now lives at `command-centre/` in the repo root.
 - **Branching workflow** - `/new-feature` starts a feature branch, `/release` cuts a version. A branch-guard hook gently reminds you to use feature branches for code changes.
 - **Cron system** - scheduled jobs now run in-process (they stop when the server stops, no orphaned tasks). Full Windows support.
-- **4 new skills** - `ops-cron` (scheduled jobs), `tool-stitch` (fetch UI designs), `viz-interface-design` (dashboard/admin UI), `viz-stitch-design` (design generation).
+- **New workflow skills** - `ops-cron` for scheduled jobs plus the current AI-OS skill set selected in `.claude/skills/`.
 - **CI pipeline** - automated checks on pull requests, with path-based filtering so content changes don't trigger code checks.
 - **Version tracking** - `CHANGELOG.md` and `VERSION` file so you can see what changed between updates.
 

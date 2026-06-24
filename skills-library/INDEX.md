@@ -113,11 +113,11 @@ _3 total · 3 live in `.claude/skills/`._
 
 ### Thinking & Decisions
 
-_1 total · 0 net-new, 1 promoted to live (str-thinking-partner)._
+_1 total · 0 net-new, 1 absorbed into AI-OS core (thinking-partner -> AGENTS.md "Thinking Discipline" + context/thinking/)._
 
 | Skill | Cat | What it does | Active dup? | Triggers | Source |
 |-------|-----|--------------|-------------|----------|--------|
-| thinking-partner | str | Deterministic thinking partner: challenges assumptions and applies 150+ mental models (full catalog in references/model-catalog.md, loaded on demand) to sharpen decisions and solve problems. One router SKILL.md + on-demand catalog - the model for bundled promotion. | promoted -> str-thinking-partner (live) | help me think through X, challenge my assumptions, what am I missing, stress-test this, play devil's advocate, decide between X and Y, second-order effects, apply mental models | mattnowdev/thinking-partner |
+| thinking-partner | core | Deterministic thinking partner: challenges assumptions, detects orientation capture (GT0 to GT7), deploys 8 named pushback probes, and applies 150+ mental models on demand. Capability is core posture, not an invokable skill, so it was absorbed into AI-OS core instead of promoted to a `/` skill. | absorbed -> AGENTS.md "Thinking Discipline" + context/thinking/{diagnostics.md, model-catalog.md} | always-on; activates on every turn that involves a real decision, ambiguous question, or high-stakes call. Session-only off-switch: "thinking partner off" | mattnowdev/thinking-partner |
 
 ## Legend
 

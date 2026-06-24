@@ -53,6 +53,14 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-sync-prompt.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-memory-block.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-title-hint.js\""
           }
         ]
       }
@@ -90,6 +98,14 @@
           },
           {
             "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/base-return-to-main.sh\" 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/worktree-state-surface.js\""
+          },
+          {
+            "type": "command",
             "command": "node .claude/hooks/gsd-check-update.js"
           },
           {
@@ -108,6 +124,20 @@
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/backup-memory.sh\" >/dev/null 2>&1 || true",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/base-autosave.js\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/trim-memsearch-stubs.sh\" --no-backup >/dev/null 2>&1 || true"
           }
         ]
       }

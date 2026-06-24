@@ -112,10 +112,8 @@ create_test_env() {
     "mkt-ugc-scripts",
     "ops-cron",
     "str-trending-research",
-    "tool-firecrawl-scraper",
     "tool-youtube",
-    "viz-excalidraw-diagram",
-    "viz-ugc-heygen"
+    "viz-excalidraw-diagram"
   ]
 }
 IJSON
@@ -124,10 +122,8 @@ IJSON
     rm -rf .claude/skills/mkt-ugc-scripts 2>/dev/null || true
     rm -rf .claude/skills/ops-cron 2>/dev/null || true
     rm -rf .claude/skills/str-trending-research 2>/dev/null || true
-    rm -rf .claude/skills/tool-firecrawl-scraper 2>/dev/null || true
     rm -rf .claude/skills/tool-youtube 2>/dev/null || true
     rm -rf .claude/skills/viz-excalidraw-diagram 2>/dev/null || true
-    rm -rf .claude/skills/viz-ugc-heygen 2>/dev/null || true
 
     git add -A 2>/dev/null
     git commit -m "Post-install state: selected skills only" --quiet 2>/dev/null
@@ -171,10 +167,8 @@ reset_demo() {
     "mkt-ugc-scripts",
     "ops-cron",
     "str-trending-research",
-    "tool-firecrawl-scraper",
     "tool-youtube",
-    "viz-excalidraw-diagram",
-    "viz-ugc-heygen"
+    "viz-excalidraw-diagram"
   ]
 }
 IJSON
@@ -701,19 +695,17 @@ setup_scenario_25() {
     "mkt-ugc-scripts",
     "ops-cron",
     "str-trending-research",
-    "tool-firecrawl-scraper",
     "tool-youtube",
     "viz-excalidraw-diagram",
-    "viz-nano-banana",
-    "viz-ugc-heygen"
+    "viz-nano-banana"
   ]
 }
 IJSON
 
     # Remove skills the user "didn't select"
     for skill in mkt-content-repurposing mkt-copywriting mkt-ugc-scripts ops-cron \
-                 str-trending-research tool-firecrawl-scraper tool-youtube \
-                 viz-excalidraw-diagram viz-nano-banana viz-ugc-heygen; do
+                 str-trending-research tool-youtube \
+                 viz-excalidraw-diagram viz-nano-banana; do
         rm -rf ".claude/skills/$skill" 2>/dev/null || true
     done
 

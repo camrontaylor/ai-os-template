@@ -63,10 +63,37 @@ This file keeps Claude Code compatible with the client-specific instructions in 
 ### Session Type Detection
 
 Scan this client's `brand_context/` for populated `.md` files (ls, not read).
-- **No files** -> first run -> onboarding is deferrable, not forced. If the first message is a concrete task or question, do that task now using sensible defaults, then offer to run `/start-here` for this client afterward so future output is on-brand. If the user greets, asks to get started or set up, or has no task, run `/start-here` to build this client's brand foundation.
+- **No files** -> first run -> onboarding is deferrable, not forced. If the first message is a concrete task or question, do that task now using sensible defaults, then offer to run `/onboarding` for this client afterward so future output is on-brand. If the user greets, asks to get started or set up, or has no task, run `/onboarding` to build this client's brand foundation.
 - **Files exist** -> returning mode -> follow the root `CLAUDE.md` runtime (silent startup, daily memory, wrap-up).
 
 This block only adds the deferrable first-run trigger so a new client workspace can onboard itself without blocking quick tasks. The full runtime (returning mode, memory, greeting, wrap-up) lives in the root `CLAUDE.md`.
+EOF
+}
+
+create_default_memory_file() {
+  local target="$1"
+  cat > "$target" <<'EOF'
+# Working Memory
+
+Curated durable facts, active threads, environment notes, and pending decisions.
+Keep this file under 2,500 characters. Move chronological detail to
+`context/memory/{YYYY-MM-DD}.md`.
+
+## Durable Facts
+
+- Add stable facts here.
+
+## Active Threads
+
+- Add live work threads here.
+
+## Environment Notes
+
+- Add machine or repo notes here.
+
+## Pending Decisions
+
+- Add unresolved decisions here.
 EOF
 }
 
@@ -215,6 +242,13 @@ if [[ -d "${PROJECT_DIR}/.claude/skills" ]]; then
   echo "  Copied skills"
 fi
 
+# Copy commands if they exist
+if [[ -d "${PROJECT_DIR}/.claude/commands" ]]; then
+  mkdir -p "${CLIENT_DIR}/.claude"
+  cp -R "${PROJECT_DIR}/.claude/commands" "${CLIENT_DIR}/.claude/commands"
+  echo "  Copied Claude Code commands"
+fi
+
 # Copy Claude Code settings if they exist
 if [[ -f "${PROJECT_DIR}/.claude/settings.json" ]]; then
   cp "${PROJECT_DIR}/.claude/settings.json" "${CLIENT_DIR}/.claude/settings.json"
@@ -270,6 +304,9 @@ LEARNINGS
   echo "  Created learnings.md"
 fi
 
+create_default_memory_file "${CLIENT_DIR}/context/MEMORY.md"
+echo "  Created MEMORY.md scratchpad"
+
 # Create .gitkeep files to preserve empty directories
 touch "${CLIENT_DIR}/brand_context/.gitkeep"
 touch "${CLIENT_DIR}/context/memory/.gitkeep"
@@ -290,4 +327,4 @@ echo ""
 echo "Next steps:"
 echo "  cd ${PROJECT_DIR}/clients/${CLIENT_SLUG}"
 echo "  claude"
-echo "  Claude detects the empty brand_context. If you start with a task it does that first, then offers /start-here; otherwise it runs /start-here to build this client's brand foundation."
+echo "  Claude detects the empty brand_context. If you start with a task it does that first, then offers /onboarding; otherwise it runs /onboarding to build this client's brand foundation."

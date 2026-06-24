@@ -32,7 +32,7 @@ flowchart TD
 
 AI-OS uses **Milvus Lite**, the version that runs inside the memsearch process. There is no separate server to start. The data lives in one file: `~/.memsearch/milvus.db`. The harmless `too_many_pings` warning you may see in logs is just gRPC keepalive noise. It is silenced by setting `GLOG_minloglevel=3` and `GRPC_VERBOSITY=NONE` in any environment that runs memsearch.
 
-The embedding model is **ONNX**, running locally on your CPU. No external API call, no cost per query. The tradeoff is speed: about half a second to embed one chunk. That is fast enough for live search, but slow for a full reindex of all 14,000+ chunks (which is why the nightly job only reindexes the small daily-changing sources).
+The embedding model is **ONNX**, running locally on your CPU. No external API call, no cost per query. The tradeoff is speed: about half a second to embed one chunk. That is fast enough for live search, but slow for a full reindex. The nightly job lists the complete source set without `--force`, so unchanged files are skipped; the weekly job uses `--force` when a full rebuild is needed.
 
 ## Cron jobs, in plain words
 
@@ -49,10 +49,10 @@ The cron daemon is a node process that watches the schedule and does the spawnin
 | Job | Schedule (exact) | On or Off | What it does |
 |-----|------------------|-----------|--------------|
 | `daily-memory-distill` | 23:00 daily | On | Reads today's session blocks and updates MEMORY.md (promotes warm threads, retires resolved ones). |
-| `nightly-memsearch-index` | 23:30 daily | On | Re-indexes the small daily-changing sources: `context/memory`, `context/notion`, `context/learnings.md`. Bounded so it never times out. |
+| `nightly-memsearch-index` | 23:30 daily | On | Re-indexes the complete AI-OS source set without `--force`, so unchanged files are skipped but destructive-sync never drops sources. |
 | `weekly-memory-gaps` | Sun 23:31 | On | Notices days that should have a diary entry but do not, and flags them before the curator runs. |
 | `weekly-memory-curator` | Sun 23:32 | On | Tidies the pinned note: drops stale entries, merges duplicates, keeps it under 2,500 characters. |
-| `weekly-memsearch-rebuild` | Sun 23:33 | On | Re-indexes the semi-static sources: operator profile, Notion sync, brand context, and the private layer. |
+| `weekly-memsearch-rebuild` | Sun 23:33 | On | Runs the same complete source set with `--force` to rebuild every embedding. |
 
 Off by default: `weekly-activity-digest` (Fri 17:00), plus `monthly-learnings-health`, `skill-update-check`, `skills-library-digest`, `skills-library-review-watcher`, and `youtube-newsletter`. Turn one on by setting `active: 'true'` in its YAML header.
 

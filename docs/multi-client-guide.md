@@ -64,10 +64,11 @@ No extra shim is needed for Codex.
 | `AGENTS.md` (client-specific) | Each client | Created by `add-client.sh` |
 | `CLAUDE.md` (client wrapper) | Each client | Created by `add-client.sh` |
 | `brand_context/` | Each client | Built automatically on first session |
+| `context/MEMORY.md` | Root + each client | Root and clients each keep their own curated working scratchpad |
 | `context/learnings.md` | Root + each client | Root has system-wide learnings; clients start with a copy and diverge |
 | `context/memory/` | Root + each client | Root has system-wide memory; clients keep their own session history |
 | `projects/` | Each client | Per-client deliverables |
-| `.env` | Each client | Usually copied from root during client creation |
+| `.env` | Root + optional client overrides | Shared keys stay in the root `.env`; clients get overrides only when needed |
 | `cron/jobs/` | Each client | Per-client scheduled tasks |
 
 ### What stays in sync automatically
@@ -208,13 +209,18 @@ Existing clients created before the `AGENTS.md` change are handled conservativel
 
 ## Sharing API Keys
 
-If all clients use the same API keys:
+Clients inherit shared API keys from the root `.env` at runtime. `add-client.sh`
+does **not** copy secrets into every client folder; when the root `.env` exists it
+creates a small client `.env` for client-specific overrides only.
+
+If one client needs its own key, add only that override:
 
 ```bash
-cp .env clients/client-two/.env
+printf 'FIRECRAWL_API_KEY=client-specific-key\n' >> clients/client-two/.env
 ```
 
-`add-client.sh` already does this automatically when the root `.env` exists.
+Do not copy the full root `.env` unless you deliberately want duplicated secrets
+and are prepared to keep them in sync yourself.
 
 ---
 

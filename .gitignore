@@ -5,6 +5,7 @@
 
 # Local settings (per-machine Claude permissions)
 .claude/settings.local.json
+.claude/launch.json
 .claude/hooks_info/ccnotify.db
 .claude/hooks_info/ccnotify.log*
 .claude/hooks_info/footer-misses.log
@@ -50,6 +51,7 @@ clients/**/site/
 # Cron runtime (logs and status are generated at runtime)
 cron/logs/
 cron/status/
+cron/*.state.json
 
 # Raw session transcripts (indexed by memsearch, not committed)
 context/transcripts/*.md
@@ -98,9 +100,21 @@ context/learnings.md
 clients/*/context/memory/*.md
 clients/*/context/MEMORY.md
 clients/*/context/learnings.md
-.codex/
+
+# Generated client working-copy mirrors. Clients inherit root AI-OS skills/scripts;
+# these folders are produced by local sync/update flows and are not shipped.
+clients/*/.claude/
+clients/*/scripts/
+clients/*/cron/templates/
 .agents/
-.cursor/
+.codex/*
+!.codex/config.toml
+!.codex/hooks.json
+!.codex/hooks/
+!.codex/hooks/*.js
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/ai-os.mdc
 
 # Runtime scheduler lock (per-machine)
 .claude/scheduled_tasks.lock

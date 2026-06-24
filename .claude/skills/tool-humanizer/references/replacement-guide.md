@@ -6,7 +6,7 @@ How to replace AI patterns with human writing. Two modes: generic (no brand cont
 
 ## Core Principle
 
-Don't just swap words - restructure the sentence. AI patterns are rarely just vocabulary problems. The sentence architecture is wrong.
+Don't just swap words — restructure the sentence. AI patterns are rarely just vocabulary problems. The sentence architecture is wrong.
 
 **Bad replacement:**
 - AI: "It's crucial to understand that leveraging data is transformative."
@@ -45,7 +45,7 @@ Don't just swap words - restructure the sentence. AI patterns are rarely just vo
 
 | Instead of | Use |
 |-----------|-----|
-| "It's important to note that X" | "X" - just say it |
+| "It's important to note that X" | "X" — just say it |
 | "It's worth mentioning that X" | "X" |
 | "One might argue that X" | "X" or "Some think X" |
 | "It could potentially" | "It could" or "It might" (one hedge, not two) |
@@ -106,18 +106,18 @@ When `brand_context/voice-profile.md` is loaded, replacements should use the bra
 **5. Signature patterns:** Apply the brand's distinctive moves.
 - Read "Signature Phrases" section
 - Use these as inspiration for closers, transitions, emphasis
-- Don't force them into every paragraph - use sparingly and naturally
+- Don't force them into every paragraph — use sparingly and naturally
 
 ---
 
 ## What NOT to Change
 
-- **Technical terms** - "API", "machine learning", "database" are fine. Don't dumb down real terminology.
-- **Intentional formality** - If the piece is a white paper or legal doc, keep appropriate register.
-- **Quotes and attributed text** - Never modify someone else's words.
-- **Data and statistics** - Never change numbers, sources, or claims.
-- **Meaning** - Never change what the text says. Only change how it says it.
-- **Format-specific conventions** - Email subject lines, ad copy character limits, etc. have their own rules.
+- **Technical terms** — "API", "machine learning", "database" are fine. Don't dumb down real terminology.
+- **Intentional formality** — If the piece is a white paper or legal doc, keep appropriate register.
+- **Quotes and attributed text** — Never modify someone else's words.
+- **Data and statistics** — Never change numbers, sources, or claims.
+- **Meaning** — Never change what the text says. Only change how it says it.
+- **Format-specific conventions** — Email subject lines, ad copy character limits, etc. have their own rules.
 
 ---
 

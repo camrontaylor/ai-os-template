@@ -65,7 +65,7 @@ Take whatever the user gives you - pasted text, a URL, a file path. Valid source
 | Framework / process | Good - naturally breaks into steps |
 | Data / research | Moderate - needs more creative framing |
 
-If they give a URL, try WebFetch first. If that fails (JS-heavy site, bot protection), fall back to `firecrawl-scraper` (needs `FIRECRAWL_API_KEY` in `.env`). If both fail, ask them to paste the content.
+If they give a URL, try WebFetch first. If that fails (JS-heavy site, bot protection) and `FIRECRAWL_API_KEY` is configured, use Firecrawl directly. If both paths fail, ask them to paste the content.
 
 ## Step 3: Break It Into Atoms
 

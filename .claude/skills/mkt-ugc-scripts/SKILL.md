@@ -9,7 +9,7 @@ description: >
   platform, writes with timing cues and delivery notes, suggests on-screen text.
   Can use str-trending-research to find topic angles before scripting.
   Saves to projects/mkt-ugc-scripts/.
-  Does NOT trigger for video generation (use viz-ugc-heygen), content repurposing
+  Does NOT trigger for video production workflows, content repurposing
   (use mkt-content-repurposing), or ad copy (use mkt-copywriting).
 ---
 
@@ -43,7 +43,7 @@ Load what exists. Skip what doesn't. This skill works standalone.
 ## Skill Relationships
 
 - **Upstream:** `str-trending-research` (topic angles), `mkt-brand-voice` (voice context), `mkt-icp` (audience language)
-- **Downstream:** `viz-ugc-heygen` (takes finished scripts and generates avatar videos), `mkt-content-repurposing` (scripts can be atomized into text posts)
+- **Downstream:** `mkt-content-repurposing` (scripts can be atomized into text posts), or whichever video production tool the user already uses
 
 ---
 
@@ -105,7 +105,7 @@ Tell the user which format you're using and why. If they want a different one, s
 
 Read `references/script-frameworks.md` for the chosen format's structure and `references/hook-library.md` for hook options. Before writing, read the reference script in `assets/reference-script-openclaw-loop.md` to calibrate tone - scripts should match that energy: personal experience, specific details, natural flow, no listicle structure.
 
-**The script IS the spoken words.** Nothing else. No timestamps like `[0-3s]`, no stage directions like `[lean in]`, no `[ON SCREEN:]` annotations. The output must be directly pasteable into HeyGen or readable as a teleprompter script. Follow the scripting conventions from `viz-ugc-heygen/references/scripting-guide.md`.
+**The script IS the spoken words.** Nothing else. No timestamps like `[0-3s]`, no stage directions like `[lean in]`, no `[ON SCREEN:]` annotations. The output must be directly pasteable into an avatar/video tool or readable as a teleprompter script. Use the spoken-delivery rules below.
 
 **Script format:**
 
@@ -147,7 +147,7 @@ This keeps the script clean and pasteable while still providing production notes
 - Front-load the hook - the first sentence decides if they stay
 - One idea per beat. Don't stack concepts.
 - Use `<break time="Xs"/>` for pauses: 0.3-0.5s between sentences, 0.8-1.0s between sections, 1.2-1.5s for dramatic beats
-- Every script ends by directing to your community link in bio. Vary the phrasing naturally - never repeat the same CTA across a batch.
+- Every script ends with a soft, context-appropriate CTA. If no offer or link is known, ask what CTA to use or leave a neutral placeholder.
 
 Present the script to the user. This is a creative checkpoint - wait for their feedback before finalising.
 
@@ -201,7 +201,7 @@ ON-SCREEN TEXT:
 After saving, show actual script excerpts - not just file paths.
 
 Suggest next steps:
-- "Want to generate this as a video? I can send it to HeyGen." (→ `viz-ugc-heygen`)
+- "Want a production plan for turning this into video?"
 - "Want more scripts on related angles?"
 - "Want to repurpose this script into text posts?" (→ `mkt-content-repurposing`)
 
@@ -216,9 +216,9 @@ Log feedback to `context/learnings.md` → `## mkt-ugc-scripts` with date and co
 ## Rules
 
 - 2026-03-10: Maximum script duration is 90 seconds. Never write a script longer than 90s. Most scripts should land between 15-60s.
-- 2026-03-10: Every script must end with a Community CTA. The close/CTA section always directs viewers to your community link in bio. Use natural variations like "Link to the free community is in my bio", "Join the free Community group - link in bio", "I break this down deeper inside the community - link in bio". Never use the same CTA phrasing twice in a batch.
-- 2026-03-10: Scripts must be the exact spoken words only - no timestamps like [0-3s], no stage directions like [lean in], no [ON SCREEN:] inline. Output must be directly pasteable into HeyGen or usable as a teleprompter. Use SSML `<break time="Xs"/>` for pauses only where a dramatic beat is needed - don't litter the script with them. Most scripts flow naturally without any. On-screen text suggestions go in a separate section after the script body.
-- 2026-03-10: Scripts must sound like personal experience, not teaching or selling. Write in first person about what YOU did, what YOU switched to, what problems YOU had. Name specific tools, specific frustrations, specific results. The audience learns by overhearing your experience, not by being lectured. "I will never use X again because..." beats "Stop using X. Here's why." No promotional language, no listicle energy, no "here are 3 tips" structure unless specifically asked for. The CTA should be soft and conditional: "If you want the full breakdown, link's in my bio" not "Join the free community!"
+- 2026-03-10: Every script must end with a context-appropriate CTA. Use the user's actual offer, lead magnet, waitlist, sales page, or profile link. If none is known, use a soft placeholder and ask for the destination before final production. Never repeat the same CTA phrasing twice in a batch.
+- 2026-03-10: Scripts must be the exact spoken words only - no timestamps like [0-3s], no stage directions like [lean in], no [ON SCREEN:] inline. Output must be directly pasteable into an avatar/video tool or usable as a teleprompter. Use SSML `<break time="Xs"/>` for pauses only where a dramatic beat is needed - don't litter the script with them. Most scripts flow naturally without any. On-screen text suggestions go in a separate section after the script body.
+- 2026-03-10: Scripts must sound like personal experience, not teaching or selling. Write in first person about what YOU did, what YOU switched to, what problems YOU had. Name specific tools, specific frustrations, specific results. The audience learns by overhearing your experience, not by being lectured. "I will never use X again because..." beats "Stop using X. Here's why." No promotional language, no listicle energy, no "here are 3 tips" structure unless specifically asked for. The CTA should be soft and conditional: "If you want the full breakdown, link's in my bio" not a hard sell.
 
 ---
 

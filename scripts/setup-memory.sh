@@ -200,6 +200,33 @@ claude_memsearch_installed() {
     claude plugin list 2>/dev/null | grep -qiE '(^|[[:space:]>])memsearch(@|[[:space:]]|$)'
 }
 
+claude_memsearch_disabled() {
+    # Returns 0 if the plugin is INSTALLED but explicitly DISABLED.
+    # Checks settings.json for an explicit "memsearch@memsearch-plugins": false,
+    # then falls back to `claude plugin list` output for older CLIs.
+    local settings_file="$HOME/.claude/settings.json"
+    if [[ -f "$settings_file" ]] \
+        && grep -qiE '"memsearch@memsearch-plugins"[[:space:]]*:[[:space:]]*false' "$settings_file"; then
+        return 0
+    fi
+
+    claude_available || return 1
+    claude plugin list 2>/dev/null | awk '
+        BEGIN { inside = 0; disabled = 0 }
+        tolower($0) ~ /memsearch@memsearch-plugins|(^|[[:space:]>])memsearch(@|[[:space:]]|$)/ { inside = 1 }
+        inside && tolower($0) ~ /status:/ {
+            if (tolower($0) ~ /disabled/) disabled = 1
+            inside = 0
+        }
+        END { exit disabled ? 0 : 1 }
+    '
+}
+
+claude_memsearch_enabled() {
+    claude_memsearch_installed || return 1
+    ! claude_memsearch_disabled
+}
+
 codex_memsearch_installed() {
     if codex_available && codex plugin list 2>/dev/null | grep -qiE '(^|[[:space:]>])memsearch(@|[[:space:]]|$)'; then
         return 0
@@ -258,7 +285,7 @@ memory_ready() {
     memsearch_installed || return 1
     zilliz_configured || return 1
     windows_watch_disabled || return 1
-    claude_memsearch_installed || codex_memsearch_installed
+    claude_memsearch_enabled || codex_memsearch_installed
 }
 
 print_status() {
@@ -279,7 +306,12 @@ print_status() {
 
     if claude_available; then
         if claude_memsearch_installed; then
-            ok "Claude Code MemSearch plugin installed"
+            if claude_memsearch_enabled; then
+                ok "Claude Code MemSearch plugin installed and enabled"
+            else
+                warn "Claude Code MemSearch plugin installed but disabled"
+                echo "  Enable if you want Claude Code plugin capture: claude plugin enable memsearch@memsearch-plugins"
+            fi
         else
             warn "Claude Code found, but MemSearch plugin is not installed"
         fi
@@ -604,7 +636,12 @@ install_claude_plugin() {
     fi
 
     if claude_memsearch_installed; then
-        ok "Claude Code MemSearch plugin already installed"
+        if claude_memsearch_enabled; then
+            ok "Claude Code MemSearch plugin already installed and enabled"
+        else
+            warn "Claude Code MemSearch plugin is installed but disabled."
+            echo "  Enable it with: claude plugin enable memsearch@memsearch-plugins"
+        fi
         return 0
     fi
 

@@ -4,6 +4,10 @@ All notable changes to AI-OS will be documented in this file. Written for humans
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.2.3 - 2026-06-24
+
 ### Added
 
 - **Recommended Memory Setup** - install and update now offer searchable memory through `scripts/setup-memory.sh` and `scripts/setup-memory.ps1`, with Claude Code as the default and Codex/both/skip choices.

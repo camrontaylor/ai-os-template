@@ -111,6 +111,35 @@ function Test-ClaudeMemSearchInstalled {
     }
 }
 
+function Test-ClaudeMemSearchDisabled {
+    $settingsPath = Join-Path $HOME ".claude\settings.json"
+    if (Test-Path -LiteralPath $settingsPath) {
+        try {
+            $settings = Get-Content -LiteralPath $settingsPath -Raw
+            if ($settings -match '"memsearch@memsearch-plugins"\s*:\s*false') {
+                return $true
+            }
+        }
+        catch {}
+    }
+
+    if (Test-ClaudeAvailable) {
+        try {
+            $output = & claude plugin list 2>$null | Out-String
+            if ($output -match '(?is)memsearch@memsearch-plugins.*?Status:\s*.*disabled') {
+                return $true
+            }
+        }
+        catch {}
+    }
+
+    return $false
+}
+
+function Test-ClaudeMemSearchEnabled {
+    return (Test-ClaudeMemSearchInstalled) -and (-not (Test-ClaudeMemSearchDisabled))
+}
+
 function Test-CodexMemSearchInstalled {
     if (Test-CodexAvailable) {
         try {
@@ -167,7 +196,7 @@ function Test-MemoryReady {
     if (-not (Test-MemSearchInstalled)) { return $false }
     if (-not (Test-ZillizConfigured)) { return $false }
     if (-not (Test-WindowsWatchDisabled)) { return $false }
-    return (Test-ClaudeMemSearchInstalled) -or (Test-CodexMemSearchInstalled)
+    return (Test-ClaudeMemSearchEnabled) -or (Test-CodexMemSearchInstalled)
 }
 
 function Show-Status {
@@ -192,7 +221,13 @@ function Show-Status {
 
     if (Test-ClaudeAvailable) {
         if (Test-ClaudeMemSearchInstalled) {
-            Success "Claude Code MemSearch plugin installed"
+            if (Test-ClaudeMemSearchEnabled) {
+                Success "Claude Code MemSearch plugin installed and enabled"
+            }
+            else {
+                Warn "Claude Code MemSearch plugin installed but disabled"
+                Write-Host "  Enable if you want Claude Code plugin capture: claude plugin enable memsearch@memsearch-plugins"
+            }
         }
         else {
             Warn "Claude Code found, but MemSearch plugin is not installed"
@@ -512,7 +547,13 @@ function Install-ClaudePlugin {
     }
 
     if (Test-ClaudeMemSearchInstalled) {
-        Success "Claude Code MemSearch plugin already installed"
+        if (Test-ClaudeMemSearchEnabled) {
+            Success "Claude Code MemSearch plugin already installed and enabled"
+        }
+        else {
+            Warn "Claude Code MemSearch plugin is installed but disabled."
+            Write-Host "  Enable it with: claude plugin enable memsearch@memsearch-plugins"
+        }
         return $true
     }
 

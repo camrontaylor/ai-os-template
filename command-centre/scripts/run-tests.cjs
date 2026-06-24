@@ -28,7 +28,7 @@ if (testFiles.length === 0) {
 
 const result = spawnSync(
   process.execPath,
-  ["--no-deprecation", "--test", ...testFiles],
+  ["--no-deprecation", "--test", "--test-concurrency=1", ...testFiles],
   { stdio: "inherit" }
 );
 

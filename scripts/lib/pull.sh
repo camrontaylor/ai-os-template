@@ -33,6 +33,17 @@ if $MERGE_FAILED; then
 
     warn "Standard pull failed - resetting system files to $UPDATE_REMOTE/$UPSTREAM_BRANCH after backups."
     git merge --abort 2>/dev/null || true
+    # Safety net: a hard reset to the remote would destroy any un-pushed local
+    # commits (e.g. autosave commits on local main). Before resetting, if local
+    # HEAD is ahead of the remote, archive the tip to a recovery branch so no
+    # committed work is ever lost. Recoverable with: git checkout <branch>.
+    AHEAD_LOCAL=$(git rev-list --count "$UPDATE_REMOTE/$UPSTREAM_BRANCH..HEAD" 2>/dev/null || echo 0)
+    if [[ "${AHEAD_LOCAL:-0}" -gt 0 ]]; then
+        RECOVERY_BRANCH="autosave-recovery/$(date +%Y%m%d-%H%M%S)"
+        if git branch "$RECOVERY_BRANCH" HEAD >/dev/null 2>&1; then
+            warn "Preserved ${AHEAD_LOCAL} un-pushed local commit(s) on branch ${RECOVERY_BRANCH} before reset."
+        fi
+    fi
     git reset --hard "$UPDATE_REMOTE/$UPSTREAM_BRANCH" >/dev/null 2>&1 || {
         for skill_name in "${MODIFIED_SKILLS[@]:-}"; do
             [[ -z "$skill_name" ]] && continue

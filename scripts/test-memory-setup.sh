@@ -163,8 +163,8 @@ test_initial_index_is_scoped() {
     assert_contains "$TEST_ROOT/memsearch-index.log" "config set embedding.provider onnx"
     assert_contains "$TEST_ROOT/memsearch-index.log" "index context/memory/ context/learnings.md brand_context/"
     assert_not_contains "$TEST_ROOT/memsearch-index.log" "memsearch index ."
-    assert_contains "$TEST_ROOT/claude-index.log" "claude plugin marketplace add zilliztech/memsearch --scope user"
-    assert_contains "$TEST_ROOT/claude-index.log" "claude plugin install memsearch --scope user"
+    assert_contains "$TEST_ROOT/claude-index.log" "claude plugin marketplace add zilliztech/memsearch"
+    assert_contains "$TEST_ROOT/claude-index.log" "claude plugin install memsearch@memsearch-plugins --scope user"
     ok "initial index is limited to memory paths"
 }
 

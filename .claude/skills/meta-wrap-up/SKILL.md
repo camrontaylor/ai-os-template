@@ -119,7 +119,7 @@ After applying fixes, log what was changed in the skill's learnings section so t
 
 ### 3c: Finalise Daily Memory
 
-One file per day: `context/memory/{YYYY-MM-DD}.md`. The session block is created at startup. Wrap-up **finalises the existing block** - it does NOT create a new session block.
+One file per day: `context/memory/{YYYY-MM-DD}.md`. The session block is created by the first real UserPromptSubmit hook, after greeting-only prompts are skipped. Wrap-up **finalises the existing block** - it does NOT create a new session block.
 
 **Note:** Auto-tracking during the session means most deliverables, decisions, and open threads are already logged. This step is about confirming and polishing what's there, not writing from scratch.
 

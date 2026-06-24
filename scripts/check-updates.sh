@@ -28,6 +28,11 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) REPO_ROOT="$(cygpath -m "$REPO_ROOT")" ;; esac
 cd "$REPO_ROOT"
 
+# Team checkout: follow the team repo for updates (no-op on a solo install).
+if [[ -f "$REPO_ROOT/scripts/lib/team-config.sh" ]]; then
+    source "$REPO_ROOT/scripts/lib/team-config.sh"
+fi
+
 # ---------- Verify git repo ----------
 if ! git rev-parse --is-inside-work-tree &>/dev/null; then
     fail "Not a git repository. Run this from the AI-OS root."

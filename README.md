@@ -23,7 +23,7 @@ bash scripts/centre.sh
 
 On first launch, `centre.sh` runs the guided installer automatically. It checks your system, prepares the local files AI-OS needs, installs Command Centre dependencies, and offers optional setup for searchable memory, private GitHub backup, GSD, and the `centre` shortcut. Optional tools such as `uv`, `yt-dlp`, `ffmpeg`, and Homebrew unlock extra features, but they are not required for the core system to start.
 
-When it finishes, open Claude Code. If your first message is setup-focused, Claude runs `/start-here` and walks you through your brand foundation - voice, positioning, and ideal customer profile. If your first message is a real task, Claude does the task first and offers setup afterward.
+When it finishes, open Claude Code. If your first message is setup-focused, Claude runs `/onboarding` and walks you through your brand foundation - voice, positioning, and ideal customer profile. If your first message is a real task, Claude does the task first and offers setup afterward.
 
 On Windows, use:
 
@@ -72,6 +72,8 @@ AI-OS is built on three layers:
 | `meta-wrap-up` | End-of-session memory and learning capture |
 | `meta-memory-write` | Save durable facts to the working memory scratchpad |
 | `meta-synthesize-locals` | Keep your local skill customizations tidy after updates |
+| `meta-find-skills` | Find the right skill for a task, searching AI-OS's own sources first |
+| `meta-systems-check` | Health-check the install and report what works, what is missing, what is broken |
 | `mkt-brand-voice` | Extract your brand voice from content or build it from scratch |
 | `mkt-positioning` | Find angles that make your offer stand out |
 | `mkt-icp` | Define your ideal customer so every skill speaks to them |
@@ -83,8 +85,7 @@ AI-OS is built on three layers:
 
 | Skill | What it does | API key needed |
 |-------|-------------|----------------|
-| `tool-humanizer` | Strip AI patterns from any output | -- |
-| `tool-firecrawl-scraper` | Scrape JS-heavy websites | `FIRECRAWL_API_KEY` |
+| `tool-humanizer` | Strip AI patterns from publishable text | -- |
 | `tool-youtube` | Pull YouTube transcripts and channel listings | `YOUTUBE_API_KEY` (channel mode only) |
 | `str-trending-research` | Research trending topics across Reddit, X, and the web | `OPENAI_API_KEY` + `XAI_API_KEY` |
 | `mkt-copywriting` | Sales copy with 7-dimension scoring | -- |
@@ -92,15 +93,11 @@ AI-OS is built on three layers:
 | `mkt-ugc-scripts` | Short-form video scripts with hook library | -- |
 | `viz-excalidraw-diagram` | Architecture and workflow diagrams | -- |
 | `str-ai-seo` | Optimize content for AI search engines and LLM citations | -- |
-| `viz-interface-design` | Design dashboards, admin panels, and SaaS UIs | -- |
 | `ops-cron` | Schedule recurring Claude Code tasks | -- |
-| `tool-stitch` | Fetch UI designs from Google Stitch projects | gcloud auth |
-| `viz-stitch-design` | Design and iterate on UI screens with Google Stitch | gcloud auth |
 | `viz-nano-banana` | Generate infographics, sketchnotes, and illustrated diagrams | `GEMINI_API_KEY` |
 | `viz-ad-creative-codex` | Build launch-ready ad creative batches natively in Codex with image generation, onboarding, creative matrix, QA, and performance readouts | -- |
 | `viz-ad-creative-fal` | Build Claude-powered multi-model paid ad creative batches using fal.ai for photoreal, typography, and short-video concepts | `FAL_KEY` |
 | `viz-ad-creative-figma` | Build Claude-powered deterministic, pixel-exact ad templates and offer cards with Figma export, Figma template flows, or local HTML fallback | `FIGMA_TOKEN` optional |
-| `viz-ugc-heygen` | Create talking-head and avatar UGC videos | `HEYGEN_API_KEY` |
 
 ---
 
@@ -401,6 +398,7 @@ Each client has its own brand context, memory, and output. Shared methodology no
 For the full setup guide, see [docs/multi-client-guide.md](docs/multi-client-guide.md).
 For how projects work (single tasks, planned projects, GSD), see [docs/projects-guide.md](docs/projects-guide.md).
 For a quick reference, see [docs/cheat-sheet.md](docs/cheat-sheet.md).
+For sharing your AI-OS setup with a team, see [docs/team-sharing.md](docs/team-sharing.md).
 
 ---
 
@@ -410,6 +408,7 @@ For a quick reference, see [docs/cheat-sheet.md](docs/cheat-sheet.md).
 ├── context/
 │   ├── SOUL.md            <- Agent personality and behaviour rules
 │   ├── USER.md            <- Your preferences and working style
+│   ├── MEMORY.md          <- Curated working scratchpad loaded at session start
 │   ├── learnings.md       <- Accumulated skill feedback (gets smarter over time)
 │   └── memory/            <- Daily session logs (auto-links to active projects)
 ├── brand_context/         <- Your brand data (voice, positioning, ICP)
@@ -451,12 +450,6 @@ These are yours and are never overwritten by updates:
 - **context/** -- your memory, learnings, session history
 - **projects/** -- everything the system generates for you
 - **.env** -- your API keys (gitignored, never leaves your machine)
-
----
-
-## Need Help?
-
-Head to the your community. Post your question and the team or another member will help you out.
 
 ---
 
