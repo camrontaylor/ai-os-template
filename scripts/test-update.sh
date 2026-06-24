@@ -105,8 +105,7 @@ create_test_env() {
     "mkt-copywriting",
     "mkt-icp",
     "mkt-positioning",
-    "tool-humanizer",
-    "viz-nano-banana"
+    "tool-humanizer"
   ],
   "removed_skills": [
     "mkt-ugc-scripts",
@@ -160,8 +159,7 @@ reset_demo() {
     "mkt-copywriting",
     "mkt-icp",
     "mkt-positioning",
-    "tool-humanizer",
-    "viz-nano-banana"
+    "tool-humanizer"
   ],
   "removed_skills": [
     "mkt-ugc-scripts",
@@ -696,8 +694,7 @@ setup_scenario_25() {
     "ops-cron",
     "str-trending-research",
     "tool-youtube",
-    "viz-excalidraw-diagram",
-    "viz-nano-banana"
+    "viz-excalidraw-diagram"
   ]
 }
 IJSON
@@ -705,7 +702,7 @@ IJSON
     # Remove skills the user "didn't select"
     for skill in mkt-content-repurposing mkt-copywriting mkt-ugc-scripts ops-cron \
                  str-trending-research tool-youtube \
-                 viz-excalidraw-diagram viz-nano-banana; do
+                 viz-excalidraw-diagram; do
         rm -rf ".claude/skills/$skill" 2>/dev/null || true
     done
 

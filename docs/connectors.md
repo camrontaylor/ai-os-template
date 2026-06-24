@@ -14,7 +14,6 @@ Documented in full in the **AGENTS.md Service Registry** and `.env.example`. Key
 | `OPENAI_API_KEY` | OpenAI | Reddit/web search in str-trending-research |
 | `XAI_API_KEY` | xAI | X/Twitter search |
 | `YOUTUBE_API_KEY` | YouTube Data API | channel listing, transcripts |
-| `GEMINI_API_KEY` | Google Gemini | image generation (viz-nano-banana) |
 | `FAL_KEY` | fal.ai | multi-model image/video generation for ad creative |
 | `FIGMA_TOKEN` / `FIGMA_FILE_KEY` | Figma API | pixel-exact ad template export |
 | `NOTION_API_KEY` | Notion | sync, database queries, meeting notes |
@@ -24,7 +23,7 @@ Documented in full in the **AGENTS.md Service Registry** and `.env.example`. Key
 | `ZILLIZ_URI` / `ZILLIZ_TOKEN` | Zilliz Cloud | remote Milvus for MemSearch (Windows) |
 | `AGENTMAIL_API_KEY` | AgentMail | agent-owned inbox for magic links / OTPs |
 
-**Python runtime note.** Two of these run a local Python script, not just an API call: `viz-nano-banana` (image generation) and `tool-youtube`. Both need **Python 3.10 or newer**. The easiest way is `uv`, which their commands already use (`uv run ...`); `uv` reads the `requires-python = ">=3.10"` line in each script and picks a matching Python for you. Install `uv` from https://docs.astral.sh/uv/ if you do not have it. Without a 3.10+ runtime these two skills fail to start; the rest of the key-based services are pure API calls and do not care about your Python version.
+**Python runtime note.** `tool-youtube` runs a local Python script, not just an API call, and needs **Python 3.10 or newer**. The easiest way is `uv`, which its commands already use (`uv run ...`); `uv` reads the `requires-python = ">=3.10"` line and picks a matching Python for you. Install `uv` from https://docs.astral.sh/uv/ if you do not have it. The rest of the key-based services are pure API calls and do not care about your Python version.
 
 ## Layer 2 - CLI MCP servers (`~/.claude.json`)
 

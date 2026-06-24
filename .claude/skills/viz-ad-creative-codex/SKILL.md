@@ -66,13 +66,13 @@ Run first-use onboarding once, then run `bash scripts/setup.sh` to confirm this 
 - Upstream: `mkt-brand-voice`, `mkt-positioning`, and `mkt-icp` build the brand lock this skill reads.
 - Sibling variants: `viz-ad-creative-fal` runs in Claude with fal.ai for automated model routing, image, and video; `viz-ad-creative-figma` runs in Claude with Figma/template production for pixel-exact outputs.
 - Related: `imagegen` is the native Codex generation tool this skill calls during Step 7.
-- Trigger conflicts: `viz-nano-banana` is for one-off Gemini images, not this ad batch workflow. This skill wins when the user wants a Codex-native, no-API-key ad creative batch.
+- Trigger conflicts: one-off image generation requests are not this ad batch workflow. This skill wins when the user wants a Codex-native, no-key ad creative batch.
 
 ## Before You Start
 
 Confirm three things, then move: which client, what is being sold or offered, and the platforms. If the onboarding profile exists, load it before asking anything so you do not re-ask known preferences.
 
-Use this Codex variant when the operator wants subscription-style generation and native Codex image output. Do not ask for `GEMINI_API_KEY`, `FAL_KEY`, or another image-model API key. If the user needs Claude automation, short video, or live model routing, route to `viz-ad-creative-fal`. If they need exact templates, no generative imagery, or Figma handoff, route to `viz-ad-creative-figma`.
+Use this Codex variant when the operator wants subscription-style generation and native Codex image output. Do not ask for an image-model API key in this variant. If the user needs Claude automation, short video, or live model routing, route to `viz-ad-creative-fal`. If they need exact templates, no generative imagery, or Figma handoff, route to `viz-ad-creative-figma`.
 
 ## Step 1: First-Run Onboarding
 

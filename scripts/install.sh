@@ -171,7 +171,7 @@ check_prerequisites() {
             warn "Windows exposes a broken python3 at ${PYTHON3_DIAGNOSTIC_PATH}."
             warn "AI-OS will use '${PYTHON_LABEL}' instead."
         fi
-        # Two skills (viz-nano-banana, tool-youtube) need Python 3.10 or newer.
+        # tool-youtube needs Python 3.10 or newer.
         # The core system is fine on any Python 3, so this is a notice, not a blocker.
         if [[ -n "${PYTHON_VERSION:-}" ]]; then
             local py_major py_minor
@@ -180,8 +180,8 @@ check_prerequisites() {
             if [[ "$py_major" =~ ^[0-9]+$ && "$py_minor" =~ ^[0-9]+$ ]]; then
                 if [[ "$py_major" -lt 3 || ( "$py_major" -eq 3 && "$py_minor" -lt 10 ) ]]; then
                     warn "Python ${PYTHON_VERSION} is older than 3.10."
-                    echo "      The core system is fine. Two skills (viz-nano-banana, tool-youtube)"
-                    echo "      need Python 3.10 or newer. The easiest fix is 'uv', which fetches a"
+                    echo "      The core system is fine. tool-youtube needs Python 3.10 or newer."
+                    echo "      The easiest fix is 'uv', which fetches a"
                     echo "      newer Python automatically (https://docs.astral.sh/uv/)."
                 fi
             fi

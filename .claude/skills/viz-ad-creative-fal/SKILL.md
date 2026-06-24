@@ -68,7 +68,7 @@ Run first-use onboarding once, then run `bash scripts/setup.sh` to check the key
 
 - Upstream: `mkt-brand-voice`, `mkt-positioning`, `mkt-icp` build the brand lock this skill reads.
 - Sibling variants: `viz-ad-creative-codex` (Codex-native no-key image generation) and `viz-ad-creative-figma` (Claude plus Figma/template engine). Same pipeline, different generation step.
-- Trigger conflicts: `viz-nano-banana` (single images, not ad sets) and `mkt-copywriting` (copy only). This skill wins when the user wants a full ad creative set with the fal engine.
+- Trigger conflicts: one-off image generation requests and `mkt-copywriting` (copy only) are not full ad sets. This skill wins when the user wants a full ad creative set with the fal engine.
 
 ## Before You Start
 

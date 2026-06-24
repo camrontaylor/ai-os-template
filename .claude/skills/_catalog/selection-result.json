@@ -23,8 +23,7 @@
     "viz-ad-creative-codex",
     "viz-ad-creative-fal",
     "viz-ad-creative-figma",
-    "viz-excalidraw-diagram",
-    "viz-nano-banana"
+    "viz-excalidraw-diagram"
   ],
   "removed": [],
   "services_needed": [
@@ -32,7 +31,6 @@
     "FAL_KEY",
     "FIGMA_FILE_KEY",
     "FIGMA_TOKEN",
-    "GEMINI_API_KEY",
     "OPENAI_API_KEY",
     "XAI_API_KEY",
     "YOUTUBE_API_KEY"

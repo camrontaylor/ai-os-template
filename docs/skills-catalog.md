@@ -4,7 +4,7 @@
 
 Two tiers. LIVE skills are active and you invoke them by typing a forward slash plus the exact name (the slash name, the folder name, and the frontmatter name all match). LIBRARY skills are staging candidates in `skills-library/`; they are NOT invocable until promoted into `.claude/skills/`.
 
-## Live skills (25) - invoke with `/name`
+## Live skills (24) - invoke with `/name`
 
 | Invoke | Folder | What it does |
 |--------|--------|--------------|
@@ -32,7 +32,6 @@ Two tiers. LIVE skills are active and you invoke them by typing a forward slash 
 | `/viz-ad-creative-fal` | `.claude/skills/viz-ad-creative-fal/` | Generate consistent, on-brand paid ad creative batches in Claude using fal.ai as the image and video engine (FLUX, Recraft, Ideogram, nano-banana, Kling, Veo, Seedance). |
 | `/viz-ad-creative-figma` | `.claude/skills/viz-ad-creative-figma/` | Generate consistent, on-brand paid ad creative batches in Claude with a deterministic Figma, Figma MCP, Figma Buzz/Weave-style, or local HTML template engine. |
 | `/viz-excalidraw-diagram` | `.claude/skills/viz-excalidraw-diagram/` | Generate Excalidraw diagram JSON files that make visual arguments - not just labelled boxes. |
-| `/viz-nano-banana` | `.claude/skills/viz-nano-banana/` | Generate images, infographics, and visual content via Gemini 3 Pro Image. |
 
 ## Skills library (staging, review-only, not invocable)
 
@@ -131,4 +130,4 @@ These live under `skills-library/backlog/<pack>/<name>/`. To make one live: move
 
 ---
 
-Totals: 25 live skills, 76 library skills.
+Totals: 24 live skills, 76 library skills.

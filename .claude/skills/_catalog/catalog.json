@@ -272,26 +272,6 @@
       "requires_services": [],
       "dependencies": [],
       "mcp_servers": []
-    },
-    "viz-nano-banana": {
-      "category": "visual",
-      "version": "1.0.0",
-      "description": "AI image generation via Gemini",
-      "story": {
-        "text": "",
-        "video": ""
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "summary": "Initial release"
-        }
-      ],
-      "requires_services": [
-        "GEMINI_API_KEY"
-      ],
-      "dependencies": [],
-      "mcp_servers": []
     }
   }
 }
