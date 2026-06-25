@@ -2,61 +2,71 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/gsd-prompt-guard.js",
+            "command": "bash scripts/codex-hook.sh .claude/hooks/aios-authority-guard.js",
             "timeout": 5
           }
-        ]
+        ],
+        "matcher": "Write|Edit|MultiEdit|Bash"
       },
       {
-        "matcher": "Write|Edit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/branch-guard.js",
+            "command": "bash scripts/codex-hook.sh .claude/hooks/gsd-prompt-guard.js",
             "timeout": 5
           }
-        ]
+        ],
+        "matcher": "Write|Edit"
       },
       {
-        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/overwrite-guard.js",
+            "command": "bash scripts/codex-hook.sh .claude/hooks/branch-guard.js",
             "timeout": 5
           }
-        ]
+        ],
+        "matcher": "Write|Edit|Bash"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/codex-hook.sh .claude/hooks/overwrite-guard.js",
+            "timeout": 5
+          }
+        ],
+        "matcher": "Write"
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task",
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/gsd-context-monitor.js",
+            "command": "bash scripts/codex-hook.sh .claude/hooks/gsd-context-monitor.js",
             "timeout": 10
           }
-        ]
+        ],
+        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task"
       },
       {
-        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/skill-auto-commit.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/skill-auto-commit.js"
           }
-        ]
+        ],
+        "matcher": "Write|Edit|MultiEdit"
       },
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/session-sync-tool.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-sync-tool.js"
           }
         ]
       }
@@ -66,36 +76,35 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/worktree-data-link.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/worktree-data-link.js"
           },
           {
             "type": "command",
-            "command": "bash scripts/base-return-to-main.sh 2>/dev/null || true"
+            "command": "bash scripts/codex-hook.sh scripts/base-return-to-main.sh"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/worktree-state-surface.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/worktree-state-surface.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/gsd-check-update.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/gsd-check-update.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/session-sync.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-sync.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/load-memory-snapshot.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/load-memory-snapshot.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/epitaxy-stash-guard.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/epitaxy-stash-guard.js"
           },
           {
             "type": "command",
-            "command": "bash scripts/backup-memory.sh >/dev/null 2>&1 || true",
-            "timeout": 15
+            "command": "bash scripts/codex-hook.sh scripts/backup-memory.sh"
           }
         ]
       }
@@ -105,15 +114,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/session-sync-prompt.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-sync-prompt.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/session-memory-block.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-memory-block.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/session-title-hint.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-title-hint.js"
           }
         ]
       }
@@ -123,11 +132,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/session-sync-stop.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-sync-stop.js"
           },
           {
             "type": "command",
-            "command": "node .codex/hooks/footer-presence-check.js"
+            "command": "bash scripts/codex-hook.sh .claude/hooks/footer-presence-check.js"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/codex-hook.sh scripts/base-autosave.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/codex-hook.sh .claude/hooks/session-sync-notify.js"
           }
         ]
       }

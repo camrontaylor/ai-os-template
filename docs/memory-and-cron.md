@@ -18,7 +18,7 @@ flowchart TD
 
 1. **The pinned note** (`context/MEMORY.md`). One small file capped at 2,500 characters. Holds your current working threads, environment facts, and decisions waiting on you. Loaded silently at the start of every session, so the assistant always knows the lay of the land.
 
-2. **The daily diary** (`context/memory/{YYYY-MM-DD}.md`). One file per day. The assistant writes a session block each time it works with you. Has the goal, the deliverables, the decisions, and any loose ends. Today's file is loaded silently at session start.
+2. **The daily diary** (`context/memory/{YYYY-MM-DD}.md`). One file per day. The first real prompt creates a session block, and wrap-up finalises it with the goal, deliverables, decisions, and loose ends. Today's file is loaded silently at session start.
 
 3. **The learnings file** (`context/learnings.md`). Per-skill lessons accumulated over time. Loaded only when a skill runs, not at startup.
 
@@ -32,14 +32,22 @@ flowchart TD
 
 AI-OS uses **Milvus Lite**, the version that runs inside the memsearch process. There is no separate server to start. The data lives in one file: `~/.memsearch/milvus.db`. The harmless `too_many_pings` warning you may see in logs is just gRPC keepalive noise. It is silenced by setting `GLOG_minloglevel=3` and `GRPC_VERBOSITY=NONE` in any environment that runs memsearch.
 
-The embedding model is **ONNX**, running locally on your CPU. No external API call, no cost per query. The tradeoff is speed: about half a second to embed one chunk. That is fast enough for live search, but slow for a full reindex. The nightly job lists the complete source set without `--force`, so unchanged files are skipped; the weekly job uses `--force` when a full rebuild is needed.
+Milvus Lite is single-process. While an index job is writing to it, live semantic search may return a lock error. That is temporary unavailability, not missing memory. Agents should fall back to the markdown search layer and retry semantic search after the job finishes if semantic matching is still needed.
+
+Manual recall should use `bash scripts/memsearch-search.sh "your query" 10`, which resolves the canonical AI-OS collection, runs semantic search, runs deterministic markdown recall, and fuses both result sets. This matters because semantic search can return broad nearby context while exact markdown hits catch specific terms like attachment fields, duplicate handling, or workflow names. If Milvus cannot start, the wrapper returns markdown results only. The markdown layer reads `context/MEMORY.md`, `context/memory/`, `.memsearch/memory/`, `context/learnings.md`, `brand_context/`, and `context/transcripts/` directly, so it needs no lock file, local port, external service, or Codex escalation.
+
+In Codex, semantic MemSearch commands need escalated permissions because the local database lives under `~/.memsearch` and Milvus Lite binds a local loopback port even for read-only search. The markdown fallback does not need escalation.
+
+Codex also blocks raw `memsearch search`, `memsearch expand`, `memsearch index`, and `memsearch stats` commands through the AI-OS authority guard. That block is intentional: direct MemSearch calls can bypass the canonical collection and fallback layer. Use `scripts/memsearch-search.sh` for recall and `scripts/memsearch-reindex.sh` for indexing.
+
+The embedding model is **ONNX**, running locally on your CPU. No external API call, no cost per query. The tradeoff is speed: about half a second to embed one chunk. That is fast enough for live search, but slow for a full reindex. The nightly and weekly jobs list the complete source set without `--force`, so unchanged files are skipped and destructive-sync never drops sources. Manual force rebuilds are still possible with `bash scripts/memsearch-reindex.sh --force`, but they are intentionally not scheduled.
 
 ## Cron jobs, in plain words
 
 A cron job is a task that runs on a schedule. AI-OS has 5 active memory jobs that maintain the memory system without you having to think about it.
 
 Each job is a markdown file in `cron/jobs/` with two parts:
-- A YAML header (name, time, schedule, model, timeout). Example: `time: '23:30', days: daily, active: 'true', timeout: 20m`.
+- A YAML header (name, time, schedule, model, timeout). Example: `time: '23:30', days: daily, active: 'true', timeout: 2h`.
 - A prompt body. When the schedule fires, the cron daemon spawns a one-shot `claude` session, feeds it the prompt body, and waits for it to finish.
 
 The cron daemon is a node process that watches the schedule and does the spawning. Run it manually with `bash scripts/start-crons.sh`. Make it run on its own forever via launchd (see `~/Library/LaunchAgents/com.aios.cron-daemon.plist`).
@@ -52,33 +60,21 @@ The cron daemon is a node process that watches the schedule and does the spawnin
 | `nightly-memsearch-index` | 23:30 daily | On | Re-indexes the complete AI-OS source set without `--force`, so unchanged files are skipped but destructive-sync never drops sources. |
 | `weekly-memory-gaps` | Sun 23:31 | On | Notices days that should have a diary entry but do not, and flags them before the curator runs. |
 | `weekly-memory-curator` | Sun 23:32 | On | Tidies the pinned note: drops stale entries, merges duplicates, keeps it under 2,500 characters. |
-| `weekly-memsearch-rebuild` | Sun 23:33 | On | Runs the same complete source set with `--force` to rebuild every embedding. |
+| `weekly-memsearch-rebuild` | Sun 23:33 | On | Runs the same complete source set as a second maintenance sync, without forced re-embedding. |
+
+The shared reindex script uses `scripts/memsearch-fast-index.py` when available. That keeps raw source paths, including `context/notion/`, while loading existing chunk hashes once for the whole collection instead of once per file.
 
 Off by default: `weekly-activity-digest` (Fri 17:00), plus `monthly-learnings-health`, `skill-update-check`, `skills-library-digest`, `skills-library-review-watcher`, and `youtube-newsletter`. Turn one on by setting `active: 'true'` in its YAML header.
 
-### Why a cron job needs auth (and the 401 wall)
+### Why a cron job needs auth (and the auth wall you just hit)
 
-The cron daemon spawns the bare `claude` binary, not your interactive shell. Your shell may wrap `claude` so a secret manager injects your key, but the daemon does not use those shell wrappers. If the bare binary has no stored credential, **every scheduled job fails with HTTP 401 "Invalid authentication credentials."** This is the single most common reason nightly jobs do nothing.
+The cron daemon spawns the `claude` binary. Your interactive shell aliases `claude` to `op run --env-file=~/.config/ai-keys.env -- claude` so 1Password injects your API key. The daemon does NOT use your shell aliases; it runs the bare binary. If the bare binary has no credential, every job fails with HTTP 401 "Invalid authentication credentials."
 
-The fix is a long-lived Claude token, set once. Two steps:
+There are two valid headless auth paths (see `scripts/claude-cron-wrapper.sh` for the wrapper that uses them):
+1. **OAuth via `claude /login`.** Creates `~/.claude/.credentials.json`, which the bare binary reads. Lasts months. One step, no 1Password needed for cron.
+2. **A 1Password Service Account token** in `~/.config/op-cron-token`. Lets `op run` work unattended. Better if you want all secrets to keep coming from 1Password.
 
-1. Get the token (interactive, needs your Claude subscription):
-
-   ```
-   claude setup-token
-   ```
-
-   Copy the token it prints.
-
-2. Hand it to the one-step enabler:
-
-   ```
-   bash scripts/enable-cron.sh <token>
-   ```
-
-That script stores the token at `~/.config/claude-code-oauth-token` (chmod 600), loads the durable launchd cron daemon, and runs one test job so you can see `result: success` before you trust it. Everything after `claude setup-token` is automated. If you ever re-run `enable-cron.sh` with no token and one is already stored, it reuses the stored token.
-
-If you prefer to keep all secrets in a password manager instead, a service-account token path also works through `scripts/claude-cron-wrapper.sh`, but the token above is the simpler default.
+Option 1 is simpler. Use it unless you have a reason to keep secrets only in 1Password.
 
 ## The daemon is durable now
 

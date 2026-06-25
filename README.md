@@ -1,29 +1,24 @@
 # AI-OS
 
-Turn Claude Code, Codex, or Cursor into a shared AI operating system.
+Turn Claude Code into your AI Operating System.
 
-AI-OS is Claude-first and tool-aware. It gives your agent personality, memory, brand context, and skills so it works like a team member, not a chatbot. It remembers your brand voice, learns your preferences over time, and runs proven methodologies instead of winging it every session.
+AI-OS gives Claude Code personality, memory, and skills so it works like a team member, not a chatbot. It remembers your brand voice, learns your preferences over time, and runs proven methodologies instead of winging it every session.
 
 ---
 
 ## Quickstart
 
-Before you start, install:
-
-- Git
-- Node.js and npm
-- Python 3
-- Claude Code, if you want the full first-run onboarding flow
-
 ```bash
-git clone https://github.com/camrontaylor/ai-os-template.git ai-os
-cd ai-os
+git clone https://<YOUR-TOKEN>@github.com/camrontaylor/AI-OS.git
+cd AI-OS
 bash scripts/centre.sh
 ```
 
-On first launch, `centre.sh` runs the guided installer automatically. It checks your system, prepares the local files AI-OS needs, installs Command Centre dependencies, and offers optional setup for searchable memory, private GitHub backup, GSD, and the `centre` shortcut. Optional tools such as `uv`, `yt-dlp`, `ffmpeg`, and Homebrew unlock extra features, but they are not required for the core system to start.
+Replace `<YOUR-TOKEN>` with the access token from the [Agentic Academy classroom](https://www.skool.com/scrapes/classroom/d1cfafed?md=552b0ba753df4c738843913fb3eb8312).
 
-When it finishes, open Claude Code. If your first message is setup-focused, Claude runs `/onboarding` and walks you through your brand foundation - voice, positioning, and ideal customer profile. If your first message is a real task, Claude does the task first and offers setup afterward.
+On first launch, `centre.sh` runs the guided bootstrap automatically. It checks your system, prepares the local files AI-OS needs, repairs missing dependencies when needed, and asks the one-time setup questions.
+
+When it finishes, open Claude Code. It automatically detects you're new and walks you through building your brand foundation -- voice, positioning, and ideal customer profile.
 
 On Windows, use:
 
@@ -33,13 +28,13 @@ powershell -File scripts\centre.ps1
 
 ### Launching the command centre
 
-If you chose to install the optional shortcut during guided setup, open a new terminal and use:
+After the first guided launch, you can keep using:
 
 ```bash
 centre
 ```
 
-The `centre` command reuses the saved launcher state, repairs missing bootstrap files silently when needed, starts the Next.js dev server, and opens `http://localhost:3000` in your browser. If you skipped the shortcut, use `bash scripts/centre.sh` instead.
+That's it. The `centre` command reuses the saved launcher state, repairs missing bootstrap files silently when needed, starts the Next.js dev server, and opens `http://localhost:3000` in your browser.
 
 `install.sh` and `setup.sh` still exist for manual maintenance:
 - `bash scripts/install.sh` runs the guided installer directly.
@@ -70,10 +65,9 @@ AI-OS is built on three layers:
 |-------|-------------|
 | `meta-skill-creator` | Build custom skills for your business |
 | `meta-wrap-up` | End-of-session memory and learning capture |
-| `meta-memory-write` | Save durable facts to the working memory scratchpad |
-| `meta-synthesize-locals` | Keep your local skill customizations tidy after updates |
-| `meta-find-skills` | Find the right skill for a task, searching AI-OS's own sources first |
+| `meta-find-skills` | Find a skill across AI-OS's own sources before reaching outside |
 | `meta-systems-check` | Health-check the install and report what works, what is missing, what is broken |
+| `memory-recall` | Search past AI-OS memory without mistaking MemSearch sandbox errors for missing history |
 | `mkt-brand-voice` | Extract your brand voice from content or build it from scratch |
 | `mkt-positioning` | Find angles that make your offer stand out |
 | `mkt-icp` | Define your ideal customer so every skill speaks to them |
@@ -85,7 +79,8 @@ AI-OS is built on three layers:
 
 | Skill | What it does | API key needed |
 |-------|-------------|----------------|
-| `tool-humanizer` | Strip AI patterns from publishable text | -- |
+| `tool-humanizer` | Strip AI patterns from any output | -- |
+| `tool-firecrawl-scraper` | Scrape JS-heavy websites | `FIRECRAWL_API_KEY` |
 | `tool-youtube` | Pull YouTube transcripts and channel listings | `YOUTUBE_API_KEY` (channel mode only) |
 | `str-trending-research` | Research trending topics across Reddit, X, and the web | `OPENAI_API_KEY` + `XAI_API_KEY` |
 | `mkt-copywriting` | Sales copy with 7-dimension scoring | -- |
@@ -93,10 +88,15 @@ AI-OS is built on three layers:
 | `mkt-ugc-scripts` | Short-form video scripts with hook library | -- |
 | `viz-excalidraw-diagram` | Architecture and workflow diagrams | -- |
 | `str-ai-seo` | Optimize content for AI search engines and LLM citations | -- |
+| `str-sitemap-workshop` | Run a conversion-first sitemap workshop with a client and produce an annotated page map | -- |
+| `viz-interface-design` | Design dashboards, admin panels, and SaaS UIs | -- |
 | `ops-cron` | Schedule recurring Claude Code tasks | -- |
+| `tool-stitch` | Fetch UI designs from Google Stitch projects | gcloud auth |
+| `viz-stitch-design` | Design and iterate on UI screens with Google Stitch | gcloud auth |
 | `viz-ad-creative-codex` | Build launch-ready ad creative batches natively in Codex with image generation, onboarding, creative matrix, QA, and performance readouts | -- |
 | `viz-ad-creative-fal` | Build Claude-powered multi-model paid ad creative batches using fal.ai for photoreal, typography, and short-video concepts | `FAL_KEY` |
 | `viz-ad-creative-figma` | Build Claude-powered deterministic, pixel-exact ad templates and offer cards with Figma export, Figma template flows, or local HTML fallback | `FIGMA_TOKEN` optional |
+| `viz-ugc-heygen` | Create talking-head and avatar UGC videos | `HEYGEN_API_KEY` |
 
 ---
 
@@ -154,10 +154,10 @@ If you've customised any skills (via feedback, Rules additions, or direct edits)
 
 If new skills are available, the script tells you what was added and how to install them.
 
-Updates come from the public template repo through an `upstream` remote. Your own private backup repo should be `origin`.
+**If the update fails with an authentication error**, the access token has been rotated. Grab the latest token from the [Agentic Academy classroom](https://www.skool.com/scrapes/classroom/d1cfafed?md=552b0ba753df4c738843913fb3eb8312) and update your remote:
 
 ```bash
-git remote add upstream https://github.com/camrontaylor/ai-os-template.git
+git remote set-url origin https://<NEW-TOKEN>@github.com/camrontaylor/AI-OS.git
 bash scripts/update.sh
 ```
 
@@ -193,7 +193,23 @@ On macOS/Linux it uses local Milvus Lite. On native Windows it uses a free [Zill
 
 On native Windows, setup disables the real-time `memsearch watch` background helper with the Windows User environment variable `MEMSEARCH_NO_WATCH=1`. This prevents orphaned watcher processes from keeping project folders open. Restart Claude Code, Codex, and open terminals after setup so they inherit the setting.
 
-Windows memory search still works. Setup runs an initial index, and later refreshes come from the managed AI-OS cron system: keep Command Centre open, or start the existing daemon with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start-crons.ps1`. To refresh manually, run `memsearch index context/memory/ context/transcripts/ context/learnings.md brand_context/` (append `.memsearch/memory/` if it exists).
+Windows memory search still works. Setup runs an initial index, and later refreshes come from the managed AI-OS cron system: keep Command Centre open, or start the existing daemon with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start-crons.ps1`. To refresh manually from macOS/Linux or Git Bash, run `bash scripts/memsearch-reindex.sh`; it resolves the canonical AI-OS collection and lists every memory source in one safe pass.
+
+Manual semantic recall goes through the AI-OS wrapper:
+
+```bash
+bash scripts/memsearch-search.sh "your query" 10
+```
+
+The wrapper runs hybrid recall: semantic MemSearch plus exact markdown recall, fused together so specific source hits can outrank broad semantic matches. If Milvus is blocked, locked, or missing, it returns markdown recall only. The fallback can also run directly:
+
+```bash
+bash scripts/memory-search.sh "your query" 10
+```
+
+In Codex, semantic MemSearch needs escalated permissions because Milvus Lite needs its local `LOCK` file and a `127.0.0.1` port even for read-only search. If escalation is unavailable, the markdown fallback still searches the authoritative AI-OS memory files without special permissions. A sandbox failure is not evidence that memory is empty.
+
+Codex blocks raw `memsearch search`, `memsearch expand`, `memsearch index`, and `memsearch stats` commands in this repo. Use the AI-OS wrapper commands above so canonical collection resolution, fallback search, and lock handling always apply.
 
 If old watcher processes are already stuck, clear them with:
 
@@ -201,7 +217,7 @@ If old watcher processes are already stuck, clear them with:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stop-memsearch-watchers.ps1
 ```
 
-**First-run index download:** the initial index downloads a local ONNX embedding model (~17 MB) from Hugging Face (one time, then cached). The progress bar can sit at 0% briefly while the connection is established - that is normal. The step is safe to interrupt; the rest of setup still applies, and you can finish it later with `memsearch index <paths>` (downloads resume from cache). The setup scripts disable the `hf_transfer` fast path and raise the download timeout to avoid stalls; override `HF_HUB_ENABLE_HF_TRANSFER` or `HF_HUB_DOWNLOAD_TIMEOUT` if you prefer different values.
+**First-run index download:** the initial index downloads a local ONNX embedding model (~17 MB) from Hugging Face (one time, then cached). The progress bar can sit at 0% briefly while the connection is established — that is normal. The step is safe to interrupt; the rest of setup still applies, and you can finish it later with `bash scripts/memsearch-reindex.sh` (downloads resume from cache). The setup scripts disable the `hf_transfer` fast path and raise the download timeout to avoid stalls; override `HF_HUB_ENABLE_HF_TRANSFER` or `HF_HUB_DOWNLOAD_TIMEOUT` if you prefer different values.
 
 The old commands still work as compatibility wrappers:
 
@@ -397,7 +413,6 @@ Each client has its own brand context, memory, and output. Shared methodology no
 For the full setup guide, see [docs/multi-client-guide.md](docs/multi-client-guide.md).
 For how projects work (single tasks, planned projects, GSD), see [docs/projects-guide.md](docs/projects-guide.md).
 For a quick reference, see [docs/cheat-sheet.md](docs/cheat-sheet.md).
-For sharing your AI-OS setup with a team, see [docs/team-sharing.md](docs/team-sharing.md).
 
 ---
 
@@ -407,7 +422,6 @@ For sharing your AI-OS setup with a team, see [docs/team-sharing.md](docs/team-s
 ├── context/
 │   ├── SOUL.md            <- Agent personality and behaviour rules
 │   ├── USER.md            <- Your preferences and working style
-│   ├── MEMORY.md          <- Curated working scratchpad loaded at session start
 │   ├── learnings.md       <- Accumulated skill feedback (gets smarter over time)
 │   └── memory/            <- Daily session logs (auto-links to active projects)
 ├── brand_context/         <- Your brand data (voice, positioning, ICP)
@@ -452,4 +466,10 @@ These are yours and are never overwritten by updates:
 
 ---
 
-Built on AI-OS
+## Need Help?
+
+Head to the Agentic Academy Skool community. Post your question and the team or another member will help you out.
+
+---
+
+Built by Simon Scrapes @ Agentic Academy

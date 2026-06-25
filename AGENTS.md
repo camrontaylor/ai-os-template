@@ -133,6 +133,12 @@ AI-OS must behave the same way when opened in Claude Code, Codex, Cursor, or any
 5. **Hooks and guards should be shared, not forked.** Prefer thin tool adapters that call the same AI-OS hook logic. If a tool needs its own bridge, the bridge should point back to the shared `.claude/` or `AGENTS.md` rules.
 6. **Security and sandbox rules still apply.** Tool safety systems can require approvals or block unsafe actions, but they do not become product or workflow guidance for AI-OS.
 
+**Codex hard-authority rule:** the project `.codex/` adapter is tracked configuration, not local preference. It must set `hooks = true` and `memories = false`, and its hook commands must go through `scripts/codex-hook.sh` so the active checkout calls AI-OS hooks by repo-relative path. Codex may not mutate files from a non-primary worktree or an off-`main` primary checkout by default, and may not create new git worktrees by default. The only opt-ins are explicit session environment flags: `AI_OS_ALLOW_CODEX_WORKTREE=1` for isolated worktree mutation, `AI_OS_ALLOW_OFF_MAIN=1` for primary side-branch mutation, or `AI_OS_ALLOW_NEW_WORKTREE=1` for creating a new worktree.
+
+Tracked `.codex/config.toml` must not loosen project sandboxing. Do not add `sandbox_mode = "danger-full-access"` or any equivalent broad-permission override to AI-OS tracked config. If a local Codex session needs temporary elevated permissions, use the tool approval path for that command only; do not persist that preference into the repository.
+
+**Codex skill-intake guard:** Codex must not run `skills add`, `npx skills add`, or equivalent package-runner installs directly against the live AI-OS catalog. Treat external skill commands as source references, vendor candidate material into `skills-library/backlog/`, trial with `skills use` when appropriate, then promote one curated capability through the registration flow. The tracked hook `.claude/hooks/aios-authority-guard.js` blocks direct installs by default; `AI_OS_ALLOW_DIRECT_SKILLS_ADD=1` is only for an explicit one-off maintenance override followed immediately by Skill & MCP Reconciliation.
+
 ### Session Title Fence
 
 Every AI-OS tool must make a short, copyable session title available on the first substantive reply of a new session. This is a tool-agnostic rule, not a Claude-only local override.
@@ -318,26 +324,26 @@ Three zones control how changes flow to `main`. There is no long-lived `dev` bra
 
 ### Worktree Workspace
 
-Start a new session any time, on a clean `main`, even when other sessions have
-uncommitted work on other branches - no stash prompt, no committing someone else's
-work first, and memory never forks. Full guide: [docs/worktree-workspace.md](docs/worktree-workspace.md).
+Start a new session any time on the primary checkout's `main` branch. Worktrees are
+an explicit isolation tool, not a default Codex behavior and not something AI-OS
+should leave hidden after routine work. Full guide: [docs/worktree-workspace.md](docs/worktree-workspace.md).
 
-How it works: each session runs in its own git worktree (isolated branch + folder),
-but the gitignored brain (`context/memory/`, `MEMORY.md`, `learnings.md`, `.env`,
-`.command-centre/`, `.memsearch/`, per-client memory) is **symlinked back to the
-primary checkout**, so sessions are isolated for code and unified for memory. The
-SessionStart hook `.claude/hooks/worktree-data-link.js` links the brain in
-automatically (before memory loads) whenever a session runs in a worktree, whether
-the worktree was made by Claude Desktop's auto-worktrees or by `worktree-new.sh`.
+When a worktree is explicitly used, the gitignored brain (`context/memory/`,
+`MEMORY.md`, `learnings.md`, `.env`, `.command-centre/`, `.memsearch/`, per-client
+memory) is **symlinked back to the primary checkout**, so isolated code work still
+uses one memory layer. The SessionStart hook `.claude/hooks/worktree-data-link.js`
+links the brain before memory loads. Codex mutation from a worktree is blocked
+unless the user explicitly starts that session with `AI_OS_ALLOW_CODEX_WORKTREE=1`.
 
-The **primary checkout stays clean automatically**, via one
+The **primary checkout (`~/Desktop/AI/AI-OS`) stays clean automatically**, via one
 owner: the SessionEnd hook `.claude/hooks/base-autosave.js`, which calls the shared,
 tool-neutral `scripts/base-autosave.sh` (Codex's session-end runs the same script).
 On session end it commits leftover work in the primary - primary only, never
 worktrees, never the gitignored brain, and skipping any file over 5 MB so a dropped
 binary cannot bloat history. So the next session opens clean, which is what stops the
 Claude Desktop stash prompt (upstream issue #62142, which no local setting can
-disable). Do branch work in worktrees, not the primary. Two safety notes: the updater
+disable). For Codex, do routine work on primary `main`; use a worktree only after
+an explicit isolation choice. Two safety notes: the updater
 (`scripts/lib/pull.sh`) archives un-pushed local commits to an `autosave-recovery/*`
 branch before any hard reset, so committed work is never lost on update; and Cursor
 cannot run hooks, so a Cursor-only session may leave the primary dirty until the next
@@ -415,7 +421,7 @@ If any blocking loop exists, the Next Actions block names those specific loops, 
 **Reconciliation with existing rules (read once, do not re-derive):**
 
 - **Post-deliverable prompts do not stack.** After a major deliverable AI-OS already has a feedback ask ("How did this land? Any adjustments?" in After Major Deliverables and Output Standards; "ask how it landed" in SOUL.md) plus the CLAUDE.md Checkpoint question ("Anything else, or wrap up?"). The footer's wrap-up line SUBSUMES the standalone checkpoint question: express wrap-up through the footer, not as a separate question. The look-back feedback ask may remain as at most one short body line. Never stack a standalone feedback question, a standalone checkpoint question, and the footer in one reply.
-- **First reply of a session.** Order is: (1) the one-time session-title fence (CLAUDE.local.md, the only allowed first-reply preamble), (2) the work, (3) the Next Actions footer last. The footer never sits inside or beside the fence.
+- **First reply of a session.** Order is: (1) the one-time session-title fence from the Session Title Fence rule, (2) the work, (3) the Next Actions footer last. The footer never sits inside or beside the fence.
 - **Pure greetings and casual chat** are not task turns: a single `Next:` line at most, or none.
 - **The footer audit and meta-wrap-up Step 0 are the same logical check at two enforcement points,** not two reviews. The per-turn footer check is cheap; Step 0 is the authoritative gate when wrap-up is actually entered.
 
@@ -478,9 +484,11 @@ When the user asks about past context, decisions, or facts:
 
 1. **Tier 0** - Check `context/MEMORY.md` and today's daily log. Already in context, zero cost. Covers most durable-fact lookups.
 2. **Tier 1** - If Tier 0 has nothing, run semantic search against the AI-OS canonical collection:
-   - Resolve the collection with `COLLECTION=$(bash scripts/lib/memsearch-collection.sh "$(git rev-parse --show-toplevel)")`, then run `memsearch search "query" --top-k 10 --json-output --collection "$COLLECTION" | python3 scripts/lib/reranker.py "query"` - results come back re-ranked by source authority and recency. Summarise the top 5.
-   - The memsearch plugin's own `/memory-recall` skill derives the plugin shadow collection. That collection is useful for plugin-local recency, but it is not authoritative for full AI-OS recall unless that skill has been explicitly adapted to use `scripts/lib/memsearch-collection.sh`.
-   - **Codex / Milvus Lite rule**: MemSearch uses local Milvus Lite at `~/.memsearch/milvus.db` and binds a loopback port. In Codex, run MemSearch semantic search with escalated permissions from the first attempt; do not try the sandbox first. If `Operation not permitted` appears, the agent forgot escalation - rerun escalated. If it errors with `DataDirLockedError` or "another process holds the lock", an index job is active; do not start another index and do not say memory is empty. Identify the lock holder when possible, label any markdown-source lookup as **degraded mode**, fall back to `context/MEMORY.md`, `context/memory/*.md`, `.memsearch/memory/*.md`, and `bash scripts/lib/memory-meta.sh "[topic]"`, then retry semantic search after indexing finishes.
+   - Use the project-local `memory-recall` skill and run `bash scripts/memsearch-search.sh "query" 10`. The wrapper resolves the canonical AI-OS collection, pipes semantic results through `scripts/lib/reranker.py`, runs sandbox-safe markdown recall too, and fuses both result sets so exact specific matches can outrank broad semantic matches. If MemSearch/Milvus is unavailable, it returns markdown results only.
+   - Do not use the memsearch plugin's default shadow collection for AI-OS recall. It is useful for plugin-local recency, but the authoritative AI-OS index is the collection resolved by `scripts/lib/memsearch-collection.sh`.
+   - **Tier 1.5 markdown fallback**: `bash scripts/memory-search.sh "query" 10` searches the authoritative markdown files directly. It needs no Milvus lock, no loopback port, no external service, and no Codex escalation. Results include `search_mode: "markdown_fallback"` so the agent can say semantic search was not used.
+   - **Raw MemSearch guard**: Codex PreToolUse blocks raw `memsearch search`, `memsearch expand`, `memsearch index`, and `memsearch stats` commands. This is intentional. Use `scripts/memsearch-search.sh` for recall and `scripts/memsearch-reindex.sh` for indexing so canonical collection resolution, markdown fallback, and lock handling always apply.
+   - **Codex / Milvus Lite rule**: MemSearch uses local Milvus Lite at `~/.memsearch/milvus.db` and binds a loopback port. In Codex, semantic MemSearch needs escalated permissions. If the wrapper returns `search_mode: "markdown_fallback"`, answer from those results and mention that semantic search was blocked or unavailable; do not say memory is empty. If it errors with `DataDirLockedError` or "another process holds the lock", an index job is active; do not start another index. Use the markdown fallback and retry semantic search after indexing finishes if needed.
    Searches `context/memory/`, `.memsearch/memory/`, `context/transcripts/`, `context/learnings.md`, and `brand_context/`.
 3. **Cite sources** - structure every recall response based on what was found:
 
@@ -568,7 +576,7 @@ Every skill and its output folder uses a category prefix.
 | `viz` | Visual / Video | `viz-thumbnail-creator`, `viz-ugc-generator` |
 | `acc` | Accounting | `acc-invoice-generator`, `acc-expense-tracker` |
 | `meta` | System / Meta | `meta-skill-creator`, `meta-wrap-up` |
-| `tool` | Utility / Integration | `tool-youtube` |
+| `tool` | Utility / Integration | `tool-firecrawl-scraper` |
 
 **Rules:**
 - Skill folder name = `{category}-{skill-name}` in kebab-case
@@ -591,12 +599,11 @@ Every skill and its output folder uses a category prefix.
 | `meta-wrap-up` | "wrap up", "close session", "end session", "we're done", "session done" |
 | `meta-goal-breakdown` | "break this down", "plan this out", "subtasks", "scope this work", "task breakdown", "is this a project" |
 | `meta-memory-write` | "remember this", "remember that", "note that", "save this to memory", "update memory", "log this", "forget about", "remove from memory" |
+| `memory-recall` | Past context, previous decisions, project history, debugging notes, "have we seen this before", "what did we decide about X" |
 | `meta-synthesize-locals` | "synthesize skills", "sync local overrides", "clean up local files" |
 | `meta-find-skills` | "find a skill", "is there a skill for", "do we have a skill for", "find me a skill for X", "extend my capabilities" |
 | `meta-worktree` | "check worktrees", "check the folder", "what is going on", "what happened while I was away", "where is my work", "is everything saved", "tidy up the folder", "audit my workspace", "review the folder", "clean up my branches" |
 | `meta-systems-check` | "systems check", "health check", "is everything working", "what's broken", "diagnose ai-os", "check my setup", "is everything connected", "did anything break" |
-
-> `meta-goal-breakdown` is a native routing behavior built into this file and the Task Routing rules, not an installed skill. It has no folder under `.claude/skills/` and no `brand_context/` needs, so it appears in this Skill Registry (the triggers are real) but not in the Context Matrix, and Skill & MCP Reconciliation should not flag it as missing. (`meta-find-skills` is a real installed skill with a folder and a Context Matrix row.)
 
 ### Foundation Skills
 
@@ -620,22 +627,35 @@ Every skill and its output folder uses a category prefix.
 |-------|-------------|
 | `str-ai-seo` | "AI SEO", "AEO", "GEO", "LLMO", "answer engine optimization", "AI citations", "AI visibility", "optimize for ChatGPT/Perplexity/Claude", "show up in AI answers" |
 | `str-trending-research` | "research", "what's trending", "what are people saying about", "recent discussions", "last 30 days", "community sentiment on", "look into", "dig into" |
-
+| `str-sitemap-workshop` | "sitemap workshop", "plan the sitemap", "site structure", "site architecture", "information architecture", "what pages do we need", "map out the website", "page structure", "nav structure", "website discovery", "run a workshop with my client" |
+| `str-resources` | "save this resource", "capture this", "add this to resources", "save this article", "save this newsletter", "save this blog post", "save this podcast", "add to my resources", "log this resource", "capture this link", "/resources" |
 ### Visual Skills
 
 | Skill | Triggers on |
 |-------|-------------|
+| `viz-stitch-design` | "design a UI", "create a screen", "stitch design", "UI mockup", "app design", "landing page design", "mobile screen", "web layout", "wireframe to UI", "design this page" |
+| `viz-interface-design` | "dashboard", "admin panel", "SaaS UI", "data interface", "metrics display", "control panel", "monitoring UI", "analytics view", "settings page", "interactive tool interface" |
 | `viz-ad-creative-codex` | "Codex ad creative", "no API key ad creative", "ad creative batch", "paid social creatives", "Meta ads", "TikTok ads", "Google ad creatives", "native image generation", "creative testing matrix" |
 | `viz-ad-creative-fal` | "Claude fal ad creatives", "fal ad creatives", "multi-model ad creative", "photoreal product ads", "short video ad concept", "mixed model ad batch", "creative testing matrix with fal" |
 | `viz-ad-creative-figma` | "Claude Figma ad creative", "deterministic ad creative", "Figma ad templates", "Figma Weave", "offer cards", "regulated ad creative", "pixel-exact ads", "no AI label ads", "brand locked ad batch" |
+| `viz-ugc-heygen` | "create a video", "UGC video", "heygen video", "talking head video", "avatar video", "make a video about", "generate video" |
 | `viz-excalidraw-diagram` | "excalidraw diagram", "draw a diagram", "visualize this workflow", "architecture diagram", "system diagram", "diagram this" |
+
+### Operations Skills
+
+| Skill | Triggers on |
+|-------|-------------|
+| `ops-new-feature` | (planned, not yet built) "new feature", "start feature", "add feature", "begin work on", "finish feature", "merge this" |
+| `ops-release` | (planned, not yet built) "release", "cut a release", "bump version", "ship it", "new version", "tag a release" |
 
 ### Utility Skills
 
 | Skill | Triggers on |
 |-------|-------------|
+| `tool-stitch` | "fetch stitch design", "get stitch screens", "stitch project", "pull from stitch", "stitch code", "export stitch" |
+| `tool-firecrawl-scraper` | "scrape website", "crawl site", "extract from URL", "scrape this page", "web scrape", "extract brand assets" |
 | `tool-humanizer` | "humanize this", "de-AI this", "make this sound human", "remove AI patterns", "clean up this copy" |
-| `tool-youtube` | "youtube transcript", "get transcript", "latest youtube video", "channel updates", "fetch from youtube" |
+| `tool-youtube` | "/youtube", "youtube", "watch this video", "transcribe this", "save this video", "capture this video", "analyze this video", "latest youtube video", "get transcript", "youtube transcript", "what did they post", "fetch from youtube", "channel updates" |
 
 ### Operations Skills
 
@@ -643,6 +663,7 @@ Every skill and its output folder uses a category prefix.
 |-------|-------------|
 | `ops-cron` | "schedule a job", "cron job", "run this every morning", "automate daily", "recurring task", "scheduled job", "check scheduled jobs", "list jobs", "run job manually", "start crons", "stop crons", "cron status", "cron logs" |
 | `ops-agent-email` | "check the agent inbox", "read the agent's email", "get the magic link", "grab the login link", "agent email", "agentmail", "send an email as the agent", "read the invite" |
+| `ops-client-dashboard` | "check the client dashboard", "client task board", "what's on the board", "task dashboard", "read the kanban", "coast board", "screenshot the board" |
 | `ops-versioning` | "make a new version", "save a version", "version this doc", "show versions", "go back to a previous version", "restore the previous version", "older version", "the one from yesterday", "undo to the last version", "version history" |
 
 *Optional skills are auto-registered by reconciliation when their folders appear on disk. Install optional skills with `bash scripts/add-skill.sh <name>`. See `.claude/skills/_catalog/catalog.json` for the full list.*
@@ -661,28 +682,39 @@ Load only the `brand_context/` files listed for each skill.
 | `mkt-copywriting` | tone only | summary | language section | - | - | `## mkt-copywriting` |
 | `mkt-content-repurposing` | tone only | - | - | - | - | `## mkt-content-repurposing` |
 | `mkt-ugc-scripts` | tone only | - | - | - | - | `## mkt-ugc-scripts` |
-| `meta-skill-creator` | - | - | - | - | - | `## meta-skill-creator` |
 | `meta-wrap-up` | - | - | - | - | - | `## meta-wrap-up` |
+| `meta-goal-breakdown` | - | summary | summary | - | - | `## meta-goal-breakdown` |
 | `meta-memory-write` | - | - | - | - | - | `## meta-memory-write` |
+| `memory-recall` | - | - | - | - | - | `## memory-recall` |
 | `meta-synthesize-locals` | - | - | - | - | - | `## meta-synthesize-locals` |
 | `meta-find-skills` | - | - | - | - | - | `## meta-find-skills` |
 | `meta-worktree` | - | - | - | - | - | `## meta-worktree` |
 | `meta-systems-check` | - | - | - | - | - | `## meta-systems-check` |
 | `str-ai-seo` | tone only | summary | full | - | - | `## str-ai-seo` |
+| `str-sitemap-workshop` | tone only | summary | full | - | - | `## str-sitemap-workshop` |
 | `str-trending-research` | - | - | - | - | - | `## str-trending-research` |
+| `str-resources` | - | - | - | - | - | `## str-resources` |
+| `tool-stitch` | - | - | - | - | - | `## tool-stitch` |
+| `tool-firecrawl-scraper` | - | - | - | - | - | `## tool-firecrawl-scraper` |
 | `tool-humanizer` | tone only | - | - | - | - | `## tool-humanizer` |
 | `tool-youtube` | - | - | - | - | - | `## tool-youtube` |
+| `viz-stitch-design` | tone only | summary | language section | - | - | `## viz-stitch-design` |
+| `viz-interface-design` | tone only | summary | language section | - | - | `## viz-interface-design` |
 | `viz-ad-creative-codex` | full | angle only | full | - | full | `## viz-ad-creative-codex` |
 | `viz-ad-creative-fal` | full | angle only | full | - | full | `## viz-ad-creative-fal` |
 | `viz-ad-creative-figma` | full | angle only | full | - | full | `## viz-ad-creative-figma` |
 | `viz-excalidraw-diagram` | - | - | - | - | - | `## viz-excalidraw-diagram` |
+| `viz-ugc-heygen` | tone only | - | - | - | - | `## viz-ugc-heygen` |
 | `ops-cron` | - | - | - | - | - | `## ops-cron` |
 | `ops-agent-email` | - | - | - | - | - | `## ops-agent-email` |
+| `ops-client-dashboard` | - | - | - | - | - | `## ops-client-dashboard` |
+| `ops-new-feature` | - | - | - | - | - | `## ops-new-feature` |
+| `ops-release` | - | - | - | - | - | `## ops-release` |
 | `ops-versioning` | - | - | - | - | - | `## ops-versioning` |
 
 **Matrix key:** `writes` = creates file | `full` = entire file | `summary` = 1-2 sentences | `tone only` = tone + vocabulary | `language section` = words-they-use section | `## skill-name` = read only that section from `context/learnings.md`
 
-**Learnings rule:** Every skill reads and writes to its own section in `context/learnings.md`. Cross-skill insights go under `# General`. Skill-specific entries go under `# Individual Skills` -> `## {folder-name}`.
+**Learnings rule:** Every skill reads and writes to its own section in `context/learnings.md`. Cross-skill insights go under `# General`. Skill-specific entries go under `# Individual Skills` → `## {folder-name}`.
 
 ---
 
@@ -834,18 +866,19 @@ Some skills use external services for enhanced functionality. API keys are store
 
 | Service | API Key | Used by | What it enables | Without it |
 |---------|---------|---------|-----------------|------------|
-| Firecrawl | `FIRECRAWL_API_KEY` | `mkt-brand-voice` Auto-Scrape, `mkt-content-repurposing` URL fallback | JS-heavy site scraping, anti-bot bypass, brand asset extraction | Falls back to WebFetch and then manual paste |
+| Firecrawl | `FIRECRAWL_API_KEY` | `tool-firecrawl-scraper`, `mkt-brand-voice` (Auto-Scrape) | JS-heavy site scraping, anti-bot bypass, brand asset extraction | Falls back to WebFetch and then manual paste |
 | OpenAI | `OPENAI_API_KEY` | `str-trending-research` | Reddit search via Responses API with `web_search` | Falls back to WebSearch without engagement metrics |
 | xAI | `XAI_API_KEY` | `str-trending-research` | X/Twitter search via xAI API with `x_search` | Falls back to WebSearch without engagement metrics |
 | YouTube Data API v3 | `YOUTUBE_API_KEY` | `tool-youtube` | Channel video listing, handle resolution, search | Direct URL transcript mode still works |
 | fal.ai | `FAL_KEY` | `viz-ad-creative-fal` | Multi-model image and short-video ad creative generation, including photoreal product shots, typography models, and reference-image workflows | Use `viz-ad-creative-codex` for no-key Codex stills or `viz-ad-creative-figma` for deterministic templates |
 | Figma API | `FIGMA_TOKEN`, `FIGMA_FILE_KEY` | `viz-ad-creative-figma` | Pixel-exact export from brand-locked Figma templates | Falls back to local HTML-to-image render after `npm install` in the skill folder |
+| HeyGen | `HEYGEN_API_KEY` | `viz-ugc-heygen` | AI avatar and UGC video generation | No fallback |
+| Google Stitch | gcloud auth | `tool-stitch`, `viz-stitch-design` | UI design generation and export | No fallback |
 | Zilliz Cloud | `ZILLIZ_URI`, `ZILLIZ_TOKEN` | `scripts/setup-memory.*` on native Windows | Remote Milvus backend for MemSearch semantic recall; free clusters should use AWS `eu-central-1` (Frankfurt) or GCP `us-west-1` (Oregon). Windows disables real-time `memsearch watch` with `MEMSEARCH_NO_WATCH=1`; refresh indexing through initial/manual index or the managed cron runtime. | macOS/Linux use local Milvus Lite; Windows can use WSL/Linux or skip semantic recall. Use `scripts/stop-memsearch-watchers.ps1` to clear old watcher processes. |
+| AgentMail | `AGENTMAIL_API_KEY` | `ops-agent-email` (+ `ops-client-dashboard` re-auth) | The agent's own email inbox; reads its own magic links / OTPs to log into tools headless | No fallback; without it the agent cannot read its own mail |
 | Notion | `NOTION_API_KEY` | `scripts/notion-sync/`, cron jobs, Notion-backed planners | Notion API access for syncing pages, querying databases, reading meeting notes | Notion Desktop connector (MCP) still works for interactive use |
-| Notion Tasks | `NOTION_TASKS_DB_ID` | `scripts/thread-to-notion.py` | Optional task/thread parking lot for Notion-backed workflows | Thread-to-Notion sync is disabled |
 | Google Workspace | `GOOGLE_WORKSPACE_CLI_CLIENT_ID`, `GOOGLE_WORKSPACE_CLI_CLIENT_SECRET` | Google Calendar / Drive CLI flows | OAuth client for Google Workspace CLI access (Calendar, Drive) | Google Calendar / Drive MCP connectors still work for interactive use |
 | Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USERS` | `scripts/telegram.sh`, `telegram` plugin | Telegram bot channel for notifications and remote commands (allowlist-gated) | No fallback; channel disabled |
-| AgentMail | `AGENTMAIL_API_KEY` | `ops-agent-email` | Agent-owned inbox for reading its own magic links, OTPs, and invites headlessly | No fallback; agent email operations are disabled |
 
 ### Rules for Skills Using External Services
 
