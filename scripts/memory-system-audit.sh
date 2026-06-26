@@ -75,10 +75,18 @@ fi
 
 if [[ -n "$first_client" ]]; then
   startup_out="$(printf '{"cwd":"%s"}' "${first_client%/}" | node "$ROOT/.claude/hooks/load-memory-snapshot.js" 2>/dev/null || true)"
-  if [[ "$startup_out" == *"### SOUL - agent identity"* && "$startup_out" == *"### USER - profile and preferences"* && "$startup_out" == *"### MEMORY - curated working scratchpad"* ]]; then
-    ok "Client startup loads root SOUL/USER plus active client MEMORY."
+  if [[ "$startup_out" == *"### SOUL - agent identity"* && "$startup_out" == *"### USER - profile and preferences"* ]]; then
+    if [[ -f "$first_client/context/MEMORY.md" ]]; then
+      if [[ "$startup_out" == *"### MEMORY - curated working scratchpad"* ]]; then
+        ok "Client startup loads root SOUL/USER plus active client MEMORY."
+      else
+        fail "Client startup layering did not include active client MEMORY."
+      fi
+    else
+      warn "Client startup loaded root SOUL/USER, but active client MEMORY.md is not scaffolded yet. Run: bash scripts/update-clients.sh"
+    fi
   else
-    fail "Client startup layering did not include root SOUL/USER and client MEMORY."
+    fail "Client startup layering did not include root SOUL/USER."
   fi
 else
   warn "No client workspace available for startup layering check."
