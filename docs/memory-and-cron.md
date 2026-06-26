@@ -44,7 +44,7 @@ The embedding model is **ONNX**, running locally on your CPU. No external API ca
 
 ## Cron jobs, in plain words
 
-A cron job is a task that runs on a schedule. AI-OS has 5 active memory jobs that maintain the memory system without you having to think about it.
+A cron job is a task that runs on a schedule. AI-OS has active root and client memory jobs that maintain the memory system without you having to think about it.
 
 Each job is a markdown file in `cron/jobs/` with two parts:
 - A YAML header (name, time, schedule, model, timeout). Example: `time: '23:30', days: daily, active: 'true', timeout: 2h`.
@@ -57,6 +57,9 @@ The cron daemon is a node process that watches the schedule and does the spawnin
 | Job | Schedule (exact) | On or Off | What it does |
 |-----|------------------|-----------|--------------|
 | `daily-memory-distill` | 23:00 daily | On | Reads today's session blocks and updates MEMORY.md (promotes warm threads, retires resolved ones). |
+| `client-memory-distill` | 23:05 daily | On | Reads today's client session blocks and updates each client `context/MEMORY.md` without writing root memory. |
+| `client-memory-gaps` | Sun 23:26 | On | Writes per-client memory gap reports under each client's `context/memory/`. |
+| `client-memory-curator` | Sun 23:27 | On | Removes clearly resolved lines from each client `context/MEMORY.md` before indexing. |
 | `nightly-memsearch-index` | 23:30 daily | On | Re-indexes the complete AI-OS source set without `--force`, so unchanged files are skipped but destructive-sync never drops sources. |
 | `weekly-memory-gaps` | Sun 23:31 | On | Notices days that should have a diary entry but do not, and flags them before the curator runs. |
 | `weekly-memory-curator` | Sun 23:32 | On | Tidies the pinned note: drops stale entries, merges duplicates, keeps it under 2,500 characters. |

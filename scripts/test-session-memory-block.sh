@@ -18,6 +18,7 @@ info() { printf "${CYAN}%s${NC}\n" "$1"; }
 make_fake_repo() {
   rm -rf "$TEST_ROOT"
   mkdir -p \
+    "$TEST_ROOT/repo/.claude" \
     "$TEST_ROOT/repo/context/memory" \
     "$TEST_ROOT/repo/clients/acme/context/memory" \
     "$TEST_ROOT/repo/clients/beta/context/memory" \
@@ -85,6 +86,15 @@ test_client_cwd_stays_client_local() {
   ok "client cwd writes to local client memory"
 }
 
+test_all_clients_prompt_from_client_stays_root() {
+  make_fake_repo
+  run_hook "route-client-all-$$" "$TEST_ROOT/repo/clients/beta" "Audit all client folders"
+
+  assert_file_contains "$TEST_ROOT/repo/context/memory/$TODAY.md" "Audit all client folders"
+  assert_file_missing "$TEST_ROOT/repo/clients/beta/context/memory/$TODAY.md"
+  ok "all-client prompt from client cwd stays in root memory"
+}
+
 test_display_name_alias_routes_generically() {
   make_fake_repo
   run_hook "route-gamma-$$" "$TEST_ROOT/repo" "Fix the Gamma Studio website email"
@@ -98,5 +108,6 @@ info "Running session memory block tests..."
 test_single_client_prompt_routes_from_root
 test_all_clients_prompt_stays_root
 test_client_cwd_stays_client_local
+test_all_clients_prompt_from_client_stays_root
 test_display_name_alias_routes_generically
 ok "session memory block tests passed"

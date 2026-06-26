@@ -243,6 +243,20 @@ fi
 
 # 14. Deep Command Centre checks. Kept out of normal startup because these can be slow.
 if [ "$DEEP" -eq 1 ]; then
+  if [ -x "$ROOT/scripts/memory-system-audit.sh" ]; then
+    run_with_timeout "$DEEP_TIMEOUT" bash "$ROOT/scripts/memory-system-audit.sh"
+    deep_status=$?
+    if [ "$deep_status" -eq 0 ]; then
+      okay "Deep check passed: memory boundary audit."
+    elif [ "$deep_status" -eq 124 ]; then
+      crit "Deep check timed out after ${DEEP_TIMEOUT}s: bash scripts/memory-system-audit.sh"
+    else
+      crit "Deep check failed: bash scripts/memory-system-audit.sh"
+    fi
+  else
+    crit "Deep check skipped: scripts/memory-system-audit.sh is missing."
+  fi
+
   if [ -f "$ROOT/command-centre/package.json" ]; then
     if [ -d "$ROOT/command-centre/node_modules" ]; then
       (cd "$ROOT/command-centre" && run_with_timeout "$DEEP_TIMEOUT" npm run test:cron)
@@ -270,7 +284,7 @@ if [ "$DEEP" -eq 1 ]; then
     info "Deep check skipped: command-centre/package.json not found."
   fi
 else
-  info "Deep Command Centre checks skipped. Run with --deep to execute npm run test:cron and npm run build."
+  info "Deep memory and Command Centre checks skipped. Run with --deep to execute memory audit, npm run test:cron, and npm run build."
 fi
 
 # ---- Report ----

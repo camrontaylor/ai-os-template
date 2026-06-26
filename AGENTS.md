@@ -128,7 +128,7 @@ AI-OS must behave the same way when opened in Claude Code, Codex, Cursor, or any
    - `.codex/config.toml` and `.codex/hooks.json` adapt Codex to AI-OS.
    - `.cursor/rules/ai-os.mdc` points Cursor back to `AGENTS.md`.
 2. **Tool defaults cannot outrank AI-OS.** If a global tool rule, memory layer, skill, hook, or assistant profile conflicts with this file, neutralize the tool-level default or scope it away from this repository. Do not change AI-OS to fit the tool default.
-3. **Memory authority stays inside AI-OS.** Use `context/MEMORY.md`, `context/memory/`, `context/learnings.md`, client-scoped `brand_context/`, and MemSearch. Do not use an external default memory layer as authoritative unless this repository explicitly configures it.
+3. **Memory authority stays inside AI-OS.** Use `context/MEMORY.md`, `context/memory/`, `context/learnings.md`, `brand_context/`, and MemSearch. Do not use an external default memory layer as authoritative unless this repository explicitly configures it.
 4. **Skills resolve locally first.** When a task matches an AI-OS skill in `.claude/skills/`, invoke that skill before any global Codex, Cursor, Claude, or user-level skill. Global skills are fallback only when no AI-OS skill exists.
 5. **Hooks and guards should be shared, not forked.** Prefer thin tool adapters that call the same AI-OS hook logic. If a tool needs its own bridge, the bridge should point back to the shared `.claude/` or `AGENTS.md` rules.
 6. **Security and sandbox rules still apply.** Tool safety systems can require approvals or block unsafe actions, but they do not become product or workflow guidance for AI-OS.
@@ -299,18 +299,6 @@ When the user asks to add a client:
    - `cd {absolute path}/clients/{slug} && claude`
 5. Link to `docs/multi-client-guide.md`.
 
-### Client Routing Guard
-
-When the session is running from the root AI-OS checkout and a prompt clearly targets exactly one folder under `clients/`, the guard in `.claude/hooks/client-routing-guard.js` pauses before writes, memory edits, project edits, commits, or external side effects and asks the user to confirm the client scope. The guard discovers `clients/*` dynamically; do not hardcode client names into hooks, memory scripts, or docs.
-
-Allowed paths without confirmation:
-- Explicit paths such as `clients/{slug}/...`
-- Shared/root system work
-- All-client, template, migration, or propagation work
-- Read-only review and comparison
-
-When confirmed client work starts from the root checkout, write session memory, durable notes, brand context, projects, and cron artifacts to that client's folder. Root memory is for AI-OS system behavior and shared decisions, not client-specific activity.
-
 ### Branching Policy
 
 Three zones control how changes flow to `main`. There is no long-lived `dev` branch; locally the working branch IS `main`, and everything reaches GitHub through a PR.
@@ -347,7 +335,7 @@ uses one memory layer. The SessionStart hook `.claude/hooks/worktree-data-link.j
 links the brain before memory loads. Codex mutation from a worktree is blocked
 unless the user explicitly starts that session with `AI_OS_ALLOW_CODEX_WORKTREE=1`.
 
-The **primary checkout (`~/Desktop/AI/AI-OS`) stays clean automatically**, via one
+The **primary checkout (`your primary AI-OS checkout`) stays clean automatically**, via one
 owner: the SessionEnd hook `.claude/hooks/base-autosave.js`, which calls the shared,
 tool-neutral `scripts/base-autosave.sh` (Codex's session-end runs the same script).
 On session end it commits leftover work in the primary - primary only, never
@@ -516,6 +504,8 @@ Layered memory architecture. Different files serve different roles, with explici
 
 Triggered by phrases like "remember this", "remember that", "note that", "save this to memory", "update memory", "log this", "forget about", "remove from memory". Routes to the `meta-memory-write` skill.
 
+Before writing, resolve the target with `scripts/lib/memory-target-resolver.js` or the same rules: current client workspace writes to that client's `context/MEMORY.md`; a root prompt that clearly names exactly one client writes to `clients/{slug}/context/MEMORY.md`; all-client, AI-OS, template, shared methodology, MemSearch, sync, and migration facts write to root; multiple named clients without an explicit shared or all-client frame are ambiguous and require one confirmation question. Never copy client facts upward into root memory unless the user explicitly asks to promote that fact or method to shared AI-OS memory.
+
 Three actions:
 
 - **add** - append under the appropriate section (after a substring dedup check)
@@ -540,13 +530,12 @@ When the user asks about past context, decisions, or facts:
 
 1. **Tier 0** - Check `context/MEMORY.md` and today's daily log. Already in context, zero cost. Covers most durable-fact lookups.
 2. **Tier 1** - If Tier 0 has nothing, run semantic search against the AI-OS canonical collection:
-   - Use the project-local `memory-recall` skill and run `bash scripts/memsearch-search.sh "query" 10`. The wrapper resolves the canonical AI-OS collection, pipes semantic results through `scripts/lib/reranker.py`, runs sandbox-safe markdown recall too, and fuses both result sets so exact specific matches can outrank broad semantic matches. If MemSearch/Milvus is unavailable, it returns markdown results only.
+   - Use the project-local `memory-recall` skill and run `bash scripts/memsearch-search.sh "query" 10`. The wrapper resolves the canonical AI-OS collection, pipes semantic results through `scripts/lib/reranker.py`, runs sandbox-safe markdown recall too, and fuses both result sets so exact specific matches can outrank broad semantic matches. If MemSearch/Milvus is unavailable, it returns markdown results only. From the root workspace, default recall searches root AI-OS memory only. From inside a client folder, default recall is scoped to that client. Force a scope with `--scope root|client|clients|all` and `--client {slug}` when needed.
    - Do not use the memsearch plugin's default shadow collection for AI-OS recall. It is useful for plugin-local recency, but the authoritative AI-OS index is the collection resolved by `scripts/lib/memsearch-collection.sh`.
-   - **Tier 1.5 markdown fallback**: `bash scripts/memory-search.sh "query" 10` searches the authoritative markdown files directly. It needs no Milvus lock, no loopback port, no external service, and no Codex escalation. Results include `search_mode: "markdown_fallback"` so the agent can say semantic search was not used.
+   - **Tier 1.5 markdown fallback**: `bash scripts/memory-search.sh "query" 10 --scope current|root|client|clients|all` searches authoritative memory markdown directly. It needs no Milvus lock, no loopback port, no external service, and no Codex escalation. Results include `search_mode: "markdown_fallback"` so the agent can say semantic search was not used.
    - **Raw MemSearch guard**: Codex PreToolUse blocks raw `memsearch search`, `memsearch expand`, `memsearch index`, and `memsearch stats` commands. This is intentional. Use `scripts/memsearch-search.sh` for recall and `scripts/memsearch-reindex.sh` for indexing so canonical collection resolution, markdown fallback, and lock handling always apply.
    - **Codex / Milvus Lite rule**: MemSearch uses local Milvus Lite at `~/.memsearch/milvus.db` and binds a loopback port. In Codex, semantic MemSearch needs escalated permissions. If the wrapper returns `search_mode: "markdown_fallback"`, answer from those results and mention that semantic search was blocked or unavailable; do not say memory is empty. If it errors with `DataDirLockedError` or "another process holds the lock", an index job is active; do not start another index. Use the markdown fallback and retry semantic search after indexing finishes if needed.
-   - **Multi-client scope**: wrappers default to the current checkout. From the root checkout, use `--scope root`, `--scope client --client {slug}`, `--scope clients`, or `--scope all` when the recall target matters. From `clients/{slug}`, the default is that client only.
-   - **Source boundary**: routine semantic indexing includes root/client `context/MEMORY.md`, `context/memory/`, and `context/learnings.md`. Routine markdown fallback searches the same memory surfaces, plus `clients/*/brand_context/` only when client scope is included. Root `brand_context/`, root transcripts, Notion/reference archives, and `.memsearch/memory/` are explicit deep-search or diagnostic sources, not standard recall.
+   The semantic index covers root `context/MEMORY.md`, `context/memory/`, `context/learnings.md`, plus the same memory and learning surfaces under every `clients/*` folder. The markdown fallback uses the same memory surfaces, and includes `clients/*/brand_context/` only when client scope is included. Root `brand_context/` and transcript archives are explicit deep-search/reference surfaces, not routine recall sources. The plugin's `.memsearch/memory/` shadow captures are diagnostic material only, not authoritative AI-OS memory. Client facts stay in client folders; search returns source paths, not copied root memory.
 3. **Cite sources** - structure every recall response based on what was found:
 
    **Found:** answer + cite source inline ("Based on the session log from 2026-05-11 and a decision in MEMORY.md...") + temporal context ("This was last discussed 3 days ago"). If the source is >14 days old: "Note: this information is from [date] - it may be outdated."
@@ -564,6 +553,8 @@ Tiers 2-3 (expanded chunks, raw transcript deep-search) are deferred. Do not fab
 ## Multi-Client Architecture
 
 AI-OS supports multiple clients from a single install. The root folder holds shared methodology, shared skills, and shared scripts. Each client gets a subfolder under `clients/` with its own brand context, memory, projects, and learnings.
+
+Session startup is layered: root `context/SOUL.md` and `context/USER.md` are inherited everywhere, while the active workspace supplies `context/MEMORY.md` and today's daily log. A client session should load root identity and user preferences plus that client's memory, not duplicate root memory into the client or client memory into root.
 
 ```text
 AI-OS/
@@ -589,9 +580,22 @@ AI-OS/
 - The root `AGENTS.md` is the shared source of truth
 - Claude reads the same shared guidance through the root `CLAUDE.md`
 - Codex reads the root and client `AGENTS.md` files directly when working inside a client folder
-- Each client has its own `brand_context/`, `context/memory/`, `context/learnings.md`, `USER.md`, `projects/`, and `cron/jobs/`
+- Each client has its own `brand_context/`, `context/MEMORY.md`, `context/memory/`, `context/learnings.md`, `projects/`, and `cron/jobs/`
 - One managed cron runtime per workspace schedules the root plus every `clients/*` job, with a shared leader lock in `.command-centre/`
 - Shared skills are edited at the root level; client-only skills live in that client's `.claude/skills/`
+- Client-local skill override files such as `SKILL.local.md` inside shared skill folders stay client-owned when `scripts/update-clients.sh` syncs shared skills.
+
+### Client Routing Guard
+
+The root workspace is for shared AI-OS methodology, personal/root business work, and multi-client operations. A client workspace is for that client's memory, brand context, projects, cron jobs, and deliverables.
+
+When the session is at the root and a user prompt clearly targets exactly one folder under `clients/*` by slug, display name, or alias, pause before doing any file edits, memory writes, project outputs, commits, or external actions. Ask one confirmation question:
+
+`This looks like {Client Name} work. Should I switch scope to clients/{slug}/ before proceeding?`
+
+If the user confirms, keep outputs, memory, learnings, project files, and client-specific decisions under that client folder. If they say it is root/shared AI-OS work, proceed at the root. Do not ask when the prompt is explicitly about all clients, every client folder, `clients/*`, AI-OS itself, the template, shared methodology, memory-system migration, sync/update behavior, or another root-level system task. Do not ask when the user already supplied an explicit path like `clients/{slug}/...`, because the target is already scoped.
+
+This rule must stay generic. Discover clients from `clients/*` and each client `AGENTS.md` first line, not from a hard-coded client list. It must still work with 20, 30, or 40 client folders.
 
 Full guide: [docs/multi-client-guide.md](docs/multi-client-guide.md)
 

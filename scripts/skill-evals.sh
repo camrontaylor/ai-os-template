@@ -14,7 +14,7 @@ fail() { printf "${RED}FAIL %s${NC}\n" "$1" >&2; exit 1; }
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/skill-evals.sh [memory-recall] [meta-memory-write] [ops-versioning]
+Usage: bash scripts/skill-evals.sh [memory-recall] [meta-memory-write] [memory-boundaries] [ops-versioning]
 
 With no arguments, runs all current skill evals.
 EOF
@@ -50,6 +50,17 @@ run_meta_memory_write() {
   ok "meta-memory-write eval passed"
 }
 
+run_memory_boundaries() {
+  info "Running memory-boundaries eval..."
+  bash "$ROOT/scripts/test-memory-target-resolver.sh"
+  bash "$ROOT/scripts/test-load-memory-snapshot.sh"
+  bash "$ROOT/scripts/test-session-memory-block.sh"
+  bash "$ROOT/scripts/test-client-routing-guard.sh"
+  bash "$ROOT/scripts/test-client-sync.sh"
+  bash "$ROOT/scripts/test-client-memory-maintenance.sh"
+  ok "memory-boundaries eval passed"
+}
+
 run_ops_versioning() {
   info "Running ops-versioning eval..."
   local tmp target list_before list_after
@@ -77,7 +88,7 @@ run_ops_versioning() {
 }
 
 if [ "$#" -eq 0 ]; then
-  set -- memory-recall meta-memory-write ops-versioning
+  set -- memory-recall meta-memory-write memory-boundaries ops-versioning
 fi
 
 for target in "$@"; do
@@ -87,6 +98,9 @@ for target in "$@"; do
       ;;
     meta-memory-write)
       run_meta_memory_write
+      ;;
+    memory-boundaries)
+      run_memory_boundaries
       ;;
     ops-versioning)
       run_ops_versioning

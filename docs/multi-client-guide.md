@@ -4,8 +4,8 @@
 
 AI-OS has two layers:
 
-1. **Shared methodology** — `AGENTS.md`, `CLAUDE.md`, `SOUL.md`, skills, scripts. Version-controlled and shared. Lives at the root of your AI-OS folder.
-2. **Client data** — `brand_context/`, memory, learnings, projects, and cron jobs. Unique per client. Lives inside `clients/{client-name}/`.
+1. **Shared methodology** - `AGENTS.md`, `CLAUDE.md`, `SOUL.md`, skills, scripts. Version-controlled and shared. Lives at the root of your AI-OS folder.
+2. **Client data** - `brand_context/`, memory, learnings, projects, and cron jobs. Unique per client. Lives inside `clients/{client-name}/`.
 
 Claude remains the primary runtime. The compatibility change is structural:
 - `AGENTS.md` is now the canonical shared instruction file
@@ -71,15 +71,16 @@ This guard is generic. It discovers clients from `clients/*` and the first line 
 |------|-------|-------------------|
 | `AGENTS.md` (shared methodology) | Root | Shared directly from the root |
 | `CLAUDE.md` (shared wrapper) | Root | Auto-inherited by Claude Code |
-| `context/SOUL.md` | Root | Read by Claude heartbeat fallback |
-| `context/USER.md` | Root | Read by Claude heartbeat fallback |
+| `context/SOUL.md` | Root | Inherited at startup in root and client sessions |
+| `context/USER.md` | Root | Inherited at startup in root and client sessions |
 | `.claude/skills/` | Root + each client | Copied on client creation, auto-synced on update |
 | `scripts/` | Root + each client | Copied on client creation, auto-synced on update |
 | `AGENTS.md` (client-specific) | Each client | Created by `add-client.sh` |
 | `CLAUDE.md` (client wrapper) | Each client | Created by `add-client.sh` |
 | `brand_context/` | Each client | Built automatically on first session |
 | `context/learnings.md` | Root + each client | Root has system-wide learnings; clients start with a copy and diverge |
-| `context/memory/` | Root + each client | Root has system-wide memory; clients keep their own session history |
+| `context/MEMORY.md` | Root + each client | Root has system-wide hot memory; clients keep their own hot memory |
+| `context/memory/` | Root + each client | Root has system-wide session history; clients keep their own session history |
 | `projects/` | Each client | Per-client deliverables |
 | `.env` | Each client | Usually copied from root during client creation |
 | `cron/jobs/` | Each client | Per-client scheduled tasks |
@@ -87,8 +88,9 @@ This guard is generic. It discovers clients from `clients/*` and the first line 
 ### What stays in sync automatically
 
 - Shared methodology at the root
-- Shared skills and scripts when you run `update.sh`
+- Shared skills and scripts when you run `update.sh` or `scripts/update-clients.sh`
 - Claude wrappers and client instruction backfills when `update-clients.sh` runs during updates
+- `SKILL.local.md`, `*.local.md`, `local/`, and `.local/` inside shared client skill folders stay client-owned during sync
 
 ### What you manage separately
 
@@ -117,6 +119,8 @@ Not here:      AI-OS/clients/client-one/.claude/skills/mkt-copywriting/SKILL.md
 ```
 
 Client-only skills are still fine. Create them directly in the client's `.claude/skills/` folder and `update.sh` will preserve them.
+
+Client-local overrides inside shared skills are also fine. Put them in `SKILL.local.md` next to the shared `SKILL.md`; root updates refresh the shared files, and the local override survives sync.
 
 ---
 

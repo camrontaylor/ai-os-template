@@ -18,7 +18,7 @@ Saves durable facts to `context/MEMORY.md` - the curated working scratchpad that
 
 ## Outcome
 
-- A durable fact is added to, updated in, or removed from `context/MEMORY.md`
+- A durable fact is added to, updated in, or removed from the scoped `context/MEMORY.md`
 - Character cap (2,500) is enforced - consolidation happens before the cap is breached
 - Confirmation message shown: `Saved - will be active from next session.`
 - `context/MEMORY.md` exists with the three-section scaffold if it was missing
@@ -27,13 +27,32 @@ Saves durable facts to `context/MEMORY.md` - the curated working scratchpad that
 
 | File | Load level | How it shapes this skill |
 |------|-----------|--------------------------|
-| `context/MEMORY.md` | Full | The file being written to - must be read before every action to dedup and check the cap |
+| scoped `context/MEMORY.md` | Full | The root or client file being written to. Must be read before every action to dedup and check the cap |
 
 If the file doesn't exist, create it with the standard scaffold before writing.
 
 ---
 
-## Step 1: Determine Action
+## Step 1: Determine Write Scope
+
+Resolve the memory target before reading or writing:
+
+- From a client workspace, write to that client's `context/MEMORY.md`.
+- From the root workspace, if the prompt clearly names exactly one client, write to `clients/{slug}/context/MEMORY.md`.
+- If the prompt is about all clients, AI-OS, the template, shared methodology, MemSearch, sync, migration, or another system-level topic, write to root `context/MEMORY.md`.
+- If the prompt names multiple clients without saying it is shared or all-client work, ask one confirmation question before writing.
+
+Use the shared resolver when available:
+
+```bash
+node scripts/lib/memory-target-resolver.js --cwd "$PWD" --prompt "<the user's memory request>"
+```
+
+Do not copy client facts upward into root memory just because the current session started at the root.
+
+---
+
+## Step 2: Determine Action
 
 Parse the user's request into one of three actions:
 
@@ -47,9 +66,9 @@ If ambiguous, ask before proceeding.
 
 ---
 
-## Step 2: Read MEMORY.md
+## Step 3: Read MEMORY.md
 
-Read `context/MEMORY.md` in full. If it doesn't exist, create it with this scaffold:
+Read the scoped `context/MEMORY.md` in full. If it doesn't exist, create it with this scaffold:
 
 ```markdown
 <!-- Cap: 2,500 chars. Curated working scratchpad. Maintained by meta-memory-write skill. Mid-session writes take effect on the next session (frozen snapshot pattern). -->
@@ -64,7 +83,7 @@ Read `context/MEMORY.md` in full. If it doesn't exist, create it with this scaff
 
 ---
 
-## Step 3: Pick Target Section
+## Step 4: Pick Target Section
 
 Decide which section the fact belongs in:
 
@@ -78,7 +97,7 @@ If the fact doesn't fit any of the three, ask the user where it belongs rather t
 
 ---
 
-## Step 4: Dedup Check
+## Step 5: Dedup Check
 
 Scan the file for substring matches against the new fact:
 
@@ -88,9 +107,9 @@ Scan the file for substring matches against the new fact:
 
 ---
 
-## Step 5: Cap Check
+## Step 6: Cap Check
 
-Compute current byte count of `context/MEMORY.md`.
+Compute current byte count of the scoped `context/MEMORY.md`.
 
 - **Bash:** `wc -c < context/MEMORY.md`
 - **PowerShell:** `(Get-Item context/MEMORY.md).Length`
@@ -106,7 +125,7 @@ If adding the new fact would push the file over **2,500 characters**:
 
 ---
 
-## Step 6: Write the Change
+## Step 7: Write the Change
 
 Apply the action using the Edit tool with precise old_string/new_string:
 
@@ -118,7 +137,7 @@ Never store secret values - only reference names (e.g., `FIRECRAWL_API_KEY in .e
 
 ---
 
-## Step 7: Confirm
+## Step 8: Confirm
 
 After the write succeeds, reply with exactly:
 
@@ -143,6 +162,7 @@ If the dedup check caused a skip, reply: `Already saved - no change needed.`
 - Always confirm with the user before **remove** - show the exact line being deleted.
 - Mid-session writes persist to disk but only take effect on the next session. Tell the user this in the confirmation message so they understand why.
 - Do not create new sections beyond Active Threads / Environment Notes / Pending Decisions. If a fact doesn't fit, ask the user where it belongs.
+- Always resolve root vs client scope before writing. Client-specific facts go to `clients/{slug}/context/MEMORY.md`, not root, unless the user explicitly says the fact is shared methodology.
 
 ---
 
@@ -159,7 +179,12 @@ The eval checks that the skill still requires the three canonical sections,
 enforces the 2,500-character cap, performs a duplicate check before add,
 prefers replace over duplicate add, requires explicit confirmation before
 remove, stores env var names instead of secret values, and keeps mid-session
-writes on the next-session snapshot contract.
+writes on the next-session snapshot contract. Run the boundary eval after
+changing scope rules:
+
+```bash
+bash scripts/skill-evals.sh memory-boundaries
+```
 
 ---
 

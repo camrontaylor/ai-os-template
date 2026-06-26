@@ -37,6 +37,20 @@ This file keeps Claude Code compatible with the client-specific instructions in 
 EOF
 }
 
+create_memory_scaffold() {
+  local target="$1"
+  cat > "$target" <<'EOF'
+<!-- Cap: 2,500 chars. Client-scoped curated scratchpad. -->
+# Working Memory
+
+## Active Threads
+
+## Environment Notes
+
+## Pending Decisions
+EOF
+}
+
 create_client_cron_proxy_scripts() {
   local scripts_dir="$1"
 
@@ -166,6 +180,53 @@ EOF
     "${scripts_dir}/run-job.sh"
 }
 
+sync_dir() {
+  local src="${1%/}"
+  local dest="${2%/}"
+  mkdir -p "$dest"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete \
+      --exclude '.git/' \
+      --exclude '.venv/' \
+      --exclude 'node_modules/' \
+      --exclude '__pycache__/' \
+      "$src/" "$dest/"
+  else
+    rm -rf "$dest"
+    mkdir -p "$dest"
+    cp -R "$src/." "$dest/"
+  fi
+}
+
+sync_shared_skill_dir() {
+  local src="${1%/}"
+  local dest="${2%/}"
+  local tmp
+
+  tmp="$(mktemp -d "${TMPDIR:-/tmp}/aios-client-skill-local.XXXXXX")"
+
+  if [[ -d "$dest" ]]; then
+    while IFS= read -r local_file; do
+      [[ -f "$local_file" ]] || continue
+      cp -p "$local_file" "$tmp/$(basename "$local_file")"
+    done < <(find "$dest" -maxdepth 1 -type f \( -name 'SKILL.local.md' -o -name '*.local.md' \) -print)
+
+    if [[ -d "$dest/local" ]]; then
+      cp -R "$dest/local" "$tmp/local"
+    fi
+    if [[ -d "$dest/.local" ]]; then
+      cp -R "$dest/.local" "$tmp/.local"
+    fi
+  fi
+
+  sync_dir "$src" "$dest"
+
+  if [[ -d "$tmp" ]]; then
+    cp -R "$tmp/." "$dest/"
+    rm -rf "$tmp"
+  fi
+}
+
 is_claude_wrapper() {
   local file="$1"
   [[ -f "$file" ]] || return 1
@@ -250,6 +311,12 @@ for CLIENT_DIR in "${CLIENTS_DIR}"/*/; do
 
   sync_client_instruction_files "$CLIENT_DIR" "$CLIENT_NAME"
 
+  if [[ ! -f "${CLIENT_DIR}/context/MEMORY.md" ]]; then
+    mkdir -p "${CLIENT_DIR}/context"
+    create_memory_scaffold "${CLIENT_DIR}/context/MEMORY.md"
+    echo "  Created MEMORY.md scaffold"
+  fi
+
   # Sync skills - copy root skills over, but preserve client-only skills
   if [[ -d "${PROJECT_DIR}/.claude/skills" ]]; then
     mkdir -p "${CLIENT_DIR}/.claude/skills"
@@ -258,14 +325,13 @@ for CLIENT_DIR in "${CLIENTS_DIR}"/*/; do
     for root_skill in "${PROJECT_DIR}/.claude/skills"/*/; do
       [[ -d "$root_skill" ]] || continue
       skill_name=$(basename "$root_skill")
-      rm -rf "${CLIENT_DIR}/.claude/skills/${skill_name}"
-      cp -R "$root_skill" "${CLIENT_DIR}/.claude/skills/${skill_name}"
+      [[ "$skill_name" == "_catalog" || "$skill_name" == "_archived" ]] && continue
+      sync_shared_skill_dir "$root_skill" "${CLIENT_DIR}/.claude/skills/${skill_name}"
     done
 
     # Copy catalog files
     if [[ -d "${PROJECT_DIR}/.claude/skills/_catalog" ]]; then
-      rm -rf "${CLIENT_DIR}/.claude/skills/_catalog"
-      cp -R "${PROJECT_DIR}/.claude/skills/_catalog" "${CLIENT_DIR}/.claude/skills/_catalog"
+      sync_dir "${PROJECT_DIR}/.claude/skills/_catalog" "${CLIENT_DIR}/.claude/skills/_catalog"
     fi
 
     # Count client-only skills (exist in client but not in root)
@@ -273,7 +339,7 @@ for CLIENT_DIR in "${CLIENTS_DIR}"/*/; do
     for client_skill in "${CLIENT_DIR}/.claude/skills"/*/; do
       [[ -d "$client_skill" ]] || continue
       skill_name=$(basename "$client_skill")
-      [[ "$skill_name" == "_catalog" ]] && continue
+      [[ "$skill_name" == "_catalog" || "$skill_name" == "_archived" ]] && continue
       if [[ ! -d "${PROJECT_DIR}/.claude/skills/${skill_name}" ]]; then
         CLIENT_ONLY=$((CLIENT_ONLY + 1))
       fi
@@ -286,6 +352,12 @@ for CLIENT_DIR in "${CLIENTS_DIR}"/*/; do
     fi
   fi
 
+  # Sync slash commands
+  if [[ -d "${PROJECT_DIR}/.claude/commands" ]]; then
+    sync_dir "${PROJECT_DIR}/.claude/commands" "${CLIENT_DIR}/.claude/commands"
+    echo "  Commands synced"
+  fi
+
   # Sync Claude Code settings
   if [[ -f "${PROJECT_DIR}/.claude/settings.json" ]]; then
     cp "${PROJECT_DIR}/.claude/settings.json" "${CLIENT_DIR}/.claude/settings.json"
@@ -294,28 +366,24 @@ for CLIENT_DIR in "${CLIENTS_DIR}"/*/; do
 
   # Sync hooks_info (required by hooks in settings.json)
   if [[ -d "${PROJECT_DIR}/.claude/hooks_info" ]]; then
-    rm -rf "${CLIENT_DIR}/.claude/hooks_info"
-    cp -R "${PROJECT_DIR}/.claude/hooks_info" "${CLIENT_DIR}/.claude/hooks_info"
+    sync_dir "${PROJECT_DIR}/.claude/hooks_info" "${CLIENT_DIR}/.claude/hooks_info"
     echo "  Hooks info synced"
   fi
 
   # Sync hooks (session-sync, gsd hooks, etc.)
   if [[ -d "${PROJECT_DIR}/.claude/hooks" ]]; then
-    rm -rf "${CLIENT_DIR}/.claude/hooks"
-    cp -R "${PROJECT_DIR}/.claude/hooks" "${CLIENT_DIR}/.claude/hooks"
+    sync_dir "${PROJECT_DIR}/.claude/hooks" "${CLIENT_DIR}/.claude/hooks"
     echo "  Hooks synced"
   fi
 
   # Sync scripts
-  rm -rf "${CLIENT_DIR}/scripts"
-  cp -R "${PROJECT_DIR}/scripts" "${CLIENT_DIR}/scripts"
+  sync_dir "${PROJECT_DIR}/scripts" "${CLIENT_DIR}/scripts"
   create_client_cron_proxy_scripts "${CLIENT_DIR}/scripts"
   echo "  Scripts synced"
 
   # Sync cron templates
   if [[ -d "${PROJECT_DIR}/cron/templates" ]]; then
-    mkdir -p "${CLIENT_DIR}/cron/templates"
-    cp -R "${PROJECT_DIR}/cron/templates/." "${CLIENT_DIR}/cron/templates/"
+    sync_dir "${PROJECT_DIR}/cron/templates" "${CLIENT_DIR}/cron/templates"
     echo "  Cron templates synced"
   fi
 
@@ -329,6 +397,7 @@ if [[ $CLIENT_COUNT -eq 0 ]]; then
 else
   echo "Done. Synced ${SYNCED} client(s)."
   echo ""
-  echo "What was synced: client instruction files, skills, scripts, settings, hooks, cron templates."
-  echo "What was NOT touched: brand_context, memory, learnings, projects, .env, cron jobs."
+  echo "What was synced: client instruction files, skills, commands, scripts, settings, hooks, cron templates."
+  echo "What was NOT overwritten: brand_context, existing memory, learnings, projects, .env, cron jobs."
+  echo "Missing client context/MEMORY.md files may be scaffolded."
 fi

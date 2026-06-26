@@ -24,15 +24,16 @@ process.stdin.on('end', () => {
 
   const cwd = data.cwd || process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
-  // Walk up to find an AI-OS root (AGENTS.md + .claude/ present)
-  // so the hook works from client subfolders or projects/briefs/ subfolders.
-  function findRoot(start) {
+  function findWorkspaceRoot(start) {
     let dir = start;
-    for (let i = 0; i < 8; i++) {
-      const hasAgents = fs.existsSync(path.join(dir, 'AGENTS.md'));
-      const hasClaude = fs.existsSync(path.join(dir, 'CLAUDE.md'));
-      const hasClaudeDir = fs.existsSync(path.join(dir, '.claude'));
-      if ((hasAgents || hasClaude) && hasClaudeDir) return dir;
+    for (let i = 0; i < 12; i++) {
+      if (
+        fs.existsSync(path.join(dir, 'AGENTS.md')) &&
+        fs.existsSync(path.join(dir, '.claude')) &&
+        fs.existsSync(path.join(dir, 'clients'))
+      ) {
+        return dir;
+      }
       const parent = path.dirname(dir);
       if (parent === dir) break;
       dir = parent;
@@ -40,16 +41,31 @@ process.stdin.on('end', () => {
     return null;
   }
 
-  // Prefer the local context (e.g., a client subfolder) over the root,
-  // matching the fallback chain documented in CLAUDE.md.
-  function resolveContext(relFile) {
-    const local = path.join(cwd, relFile);
-    if (fs.existsSync(local)) return { abs: local, source: 'local' };
-    const root = findRoot(cwd);
-    if (root && root !== cwd) {
-      const rooted = path.join(root, relFile);
-      if (fs.existsSync(rooted)) return { abs: rooted, source: 'root' };
+  // Walk up to find the active context root. In client folders this should be
+  // the client workspace, while shared SOUL/USER still come from the top root.
+  function findContextRoot(start) {
+    let dir = start;
+    for (let i = 0; i < 12; i++) {
+      const hasContext = fs.existsSync(path.join(dir, 'context'));
+      const hasInstructions =
+        fs.existsSync(path.join(dir, 'AGENTS.md')) ||
+        fs.existsSync(path.join(dir, 'CLAUDE.md'));
+      if (hasContext && hasInstructions) return dir;
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
     }
+    return null;
+  }
+
+  const workspaceRoot = findWorkspaceRoot(cwd) || findContextRoot(cwd);
+  const activeRoot = findContextRoot(cwd) || workspaceRoot;
+  if (!workspaceRoot || !activeRoot) process.exit(0);
+
+  function resolveFrom(root, relFile, source) {
+    if (!root) return null;
+    const abs = path.join(root, relFile);
+    if (fs.existsSync(abs)) return { abs, source, rel: relFile };
     return null;
   }
 
@@ -65,23 +81,37 @@ process.stdin.on('end', () => {
   const yesterday = dateStr(new Date(now.getTime() - 86400000));
 
   const targets = [
-    { rel: 'context/SOUL.md', label: 'SOUL - agent identity' },
-    { rel: 'context/USER.md', label: 'USER - profile and preferences' },
     {
-      rel: 'context/MEMORY.md',
-      label: 'MEMORY - curated working scratchpad (frozen snapshot; mid-session writes only take effect next session)',
+      resolved: resolveFrom(workspaceRoot, 'context/SOUL.md', 'root'),
+      label: 'SOUL - agent identity',
+    },
+    {
+      resolved: resolveFrom(workspaceRoot, 'context/USER.md', 'root'),
+      label: 'USER - profile and preferences',
     },
   ];
 
+  if (activeRoot !== workspaceRoot) {
+    const localSoul = resolveFrom(activeRoot, 'context/SOUL.md', 'client');
+    if (localSoul) targets.push({ resolved: localSoul, label: 'Client SOUL override' });
+    const localUser = resolveFrom(activeRoot, 'context/USER.md', 'client');
+    if (localUser) targets.push({ resolved: localUser, label: 'Client USER override' });
+  }
+
+  targets.push({
+    resolved: resolveFrom(activeRoot, 'context/MEMORY.md', 'active'),
+    label: 'MEMORY - curated working scratchpad (frozen snapshot; mid-session writes only take effect next session)',
+  });
+
   // Daily log: today first, yesterday as fallback if today has no session yet
-  const todayLog = resolveContext(`context/memory/${today}.md`);
+  const todayLog = resolveFrom(activeRoot, `context/memory/${today}.md`, 'active');
   if (todayLog) {
-    targets.push({ rel: `context/memory/${today}.md`, label: `Today's daily log (${today})` });
+    targets.push({ resolved: todayLog, label: `Today's daily log (${today})` });
   } else {
-    const yLog = resolveContext(`context/memory/${yesterday}.md`);
+    const yLog = resolveFrom(activeRoot, `context/memory/${yesterday}.md`, 'active');
     if (yLog) {
       targets.push({
-        rel: `context/memory/${yesterday}.md`,
+        resolved: yLog,
         label: `Yesterday's daily log (${yesterday}) - today has no session yet`,
       });
     }
@@ -89,12 +119,12 @@ process.stdin.on('end', () => {
 
   const sections = [];
   for (const t of targets) {
-    const resolved = resolveContext(t.rel);
+    const resolved = t.resolved;
     if (!resolved) continue;
     try {
       const content = fs.readFileSync(resolved.abs, 'utf8').trim();
       if (content.length === 0) continue;
-      sections.push(`### ${t.label}\n\nFile: \`${t.rel}\`\n\n${content}`);
+      sections.push(`### ${t.label}\n\nFile: \`${resolved.rel}\`\n\n${content}`);
     } catch {
       // Silent - fire and forget
     }
@@ -106,7 +136,7 @@ process.stdin.on('end', () => {
 
   const message =
     `# Silent startup - memory snapshot loaded (per CLAUDE.md Returning Mode)\n\n` +
-    `These files have been auto-loaded so the silent startup is genuinely silent - ` +
+    `These files have been auto-loaded so the silent startup is genuinely silent. ` +
     `you already have the frozen snapshot for this session. Do not greet, do not ` +
     `recap, do not list capabilities. Mid-session writes to \`context/MEMORY.md\` ` +
     `persist to disk but only take effect on the next session.\n\n` +

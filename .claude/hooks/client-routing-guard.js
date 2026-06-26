@@ -8,6 +8,13 @@
 
 const fs = require("fs");
 const path = require("path");
+const {
+  findContextRoot,
+  findWorkspaceRoot,
+  isClientRoot,
+  resolveMemoryTarget,
+  stripMachineContext,
+} = require(path.join(__dirname, "..", "..", "scripts", "lib", "memory-target-resolver.js"));
 
 const GREETING_RE =
   /^(hi|hey|hello|yo|sup|gm|hiya|howdy|morning|good (morning|afternoon|evening)|hey there|hello there|what'?s up|whats up|ok|okay|thanks|thank you|ty)[\s!.?,]*$/i;
@@ -19,50 +26,6 @@ const SHARED_SYSTEM_RE =
 function isGreetingOnly(prompt) {
   const cleaned = prompt.trim();
   return !cleaned || (cleaned.length <= 30 && GREETING_RE.test(cleaned));
-}
-
-function stripMachineContext(prompt) {
-  return String(prompt || "")
-    .replace(/<codex_internal_context[\s\S]*?<\/codex_internal_context>/gi, " ")
-    .replace(/<environment_context[\s\S]*?<\/environment_context>/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function findWorkspaceRoot(startDir) {
-  let dir = startDir || process.cwd();
-  for (let i = 0; i < 12; i++) {
-    if (
-      fs.existsSync(path.join(dir, "AGENTS.md")) &&
-      fs.existsSync(path.join(dir, ".claude")) &&
-      fs.existsSync(path.join(dir, "clients"))
-    ) {
-      return dir;
-    }
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return null;
-}
-
-function findContextRoot(startDir) {
-  let dir = startDir || process.cwd();
-  for (let i = 0; i < 12; i++) {
-    const hasContext = fs.existsSync(path.join(dir, "context"));
-    const hasInstructions =
-      fs.existsSync(path.join(dir, "AGENTS.md")) ||
-      fs.existsSync(path.join(dir, "CLAUDE.md"));
-    if (hasContext && hasInstructions) return dir;
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return null;
-}
-
-function isClientRoot(root) {
-  return path.basename(path.dirname(root || "")) === "clients";
 }
 
 function escapeRegExp(value) {
@@ -153,14 +116,10 @@ process.stdin.on("end", () => {
     const contextRoot = findContextRoot(cwd) || workspaceRoot;
     if (!workspaceRoot || isClientRoot(contextRoot)) return;
 
-    const matches = discoverClients(workspaceRoot).filter((client) =>
-      client.aliases.some((alias) => aliasMatches(prompt, alias))
-    );
-    if (matches.length !== 1) return;
+    const target = resolveMemoryTarget({ cwd, prompt });
+    if (target.targetType !== "client" || target.reason !== "single client mention") return;
 
-    const client = matches[0];
-    if (shouldSkipPrompt(prompt, client)) return;
-
+    const client = target.client;
     const relativeDir = `clients/${client.slug}`;
     const message =
       `AI-OS client routing hard stop: this prompt appears to target ` +
